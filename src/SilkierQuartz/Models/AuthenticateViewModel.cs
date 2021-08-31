@@ -6,11 +6,11 @@ namespace SilkierQuartz.Models
     {
         [Required]
         public string UserName { get; set; }
+
         [Required]
+        [DataType(DataType.Password)]
         public string Password { get; set; }
 
         public bool IsPersist { get; set; }
-
-        public bool IsLoginError { get; set; }
     }
 }

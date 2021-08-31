@@ -31,6 +31,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton(options);
             services.AddSingleton(authenticationOptions);
+            services.AddControllersWithViews()
+                .AddRazorOptions(options =>
+                {
+                    options.ViewLocationExpanders.Add(new ComponentViewLocationsExpander());
+                })
+                .AddApplicationPart(typeof(SilkierQuartzOptions).Assembly);
 
             services
                 .AddAuthentication(authenticationOptions.AuthScheme)
@@ -54,6 +60,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IAuthorizationHandler, SilkierQuartzDefaultAuthorizationHandler>();
 
             services.UseQuartzHostedService(stdSchedulerFactoryOptions);
+            services.AddSingleton<Cache>();
 
             var types = JobsListHelper.GetSilkierQuartzJobs(jobsasmlist?.Invoke());
             types.ForEach(t =>

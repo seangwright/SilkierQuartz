@@ -1,0 +1,10 @@
+﻿@model string
+
+<div style="text-align: center; color: #dedede;">
+    <div style="font-size: 6em; font-weight: bold; margin: 1em;"><i class="frown outline icon" style="height: auto"></i></div>
+    <div style="font-size: 2em;">Nothing to see here...</div>
+    @if (!string.IsNullOrWhiteSpace(Model))
+    {
+        <div style="font-size: 1em; margin-top: 1em;">You can add @Model by clicking the <span style="font-weight: bold">+</span> button.</div>
+    }
+</div>

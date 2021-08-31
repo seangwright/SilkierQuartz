@@ -14,26 +14,32 @@ namespace SilkierQuartz
 
         readonly Services _services;
 
-        readonly JsonSubtypesConverterBuilder _builder;
+        private static JsonSubtypesConverterBuilder _builder;
+        private static JsonSubtypesConverterBuilder Builder
+        {
+            get
+            {
+                if (_builder is null)
+                {
+                    _builder = JsonSubtypesConverterBuilder.Of(typeof(TypeHandlerBase), nameof(TypeHandlerBase.TypeId));
+                }
+
+                return _builder;
+            }
+        }
 
         public DateTime LastModified { get; private set; }
 
-        JsonSerializerSettings _jsonSerializerSettings = null;
-        private JsonSerializerSettings JsonSerializerSettings
+        private static JsonSerializerSettings _jsonSerializerSettings = null;
+        private static JsonSerializerSettings JsonSerializerSettings
         {
             get
             {
                 if (_jsonSerializerSettings == null)
                 {
-                    lock (this)
-                    {
-                        if (_jsonSerializerSettings == null)
-                        {
-                            var jss = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore };
-                            jss.Converters.Add(_builder.Build());
-                            _jsonSerializerSettings = jss;
-                        }
-                    }
+                    var jss = new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore };
+                    jss.Converters.Add(_builder.Build());
+                    _jsonSerializerSettings = jss;
                 }
 
                 return _jsonSerializerSettings;
@@ -56,7 +62,7 @@ namespace SilkierQuartz
             _services = services;
 
             _builder = JsonSubtypesConverterBuilder.Of(typeof(TypeHandlerBase), nameof(TypeHandlerBase.TypeId));
-            
+
             if (services?.Options?.StandardTypes != null)
             {
                 foreach (var typeHandler in services.Options.StandardTypes.Select(x => x.GetType()).Distinct())
@@ -90,9 +96,9 @@ namespace SilkierQuartz
             LastModified = DateTime.UtcNow;
         }
 
-        public TypeHandlerBase Deserialize(string str) => JsonConvert.DeserializeObject<TypeHandlerBase>(Encoding.UTF8.GetString(Convert.FromBase64String(str)), JsonSerializerSettings);
+        public static TypeHandlerBase Deserialize(string str) => JsonConvert.DeserializeObject<TypeHandlerBase>(Encoding.UTF8.GetString(Convert.FromBase64String(str)), JsonSerializerSettings);
 
-        public string Serialize(TypeHandlerBase typeHandler) => Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(typeHandler, JsonSerializerSettings)));
+        public static string Serialize(TypeHandlerBase typeHandler) => Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(typeHandler, JsonSerializerSettings)));
 
         public string Render(TypeHandlerBase typeHandler, object model)
         {

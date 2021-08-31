@@ -1,5 +1,8 @@
-﻿{{!<Layout}}
-{{ViewBag Title='Jobs'}}
+﻿@model SilkierQuartz.Models.JobListViewModel
+
+@{
+    ViewBag.Title = "Jobs";
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
 <div class="ui small left icon input">
@@ -16,12 +19,13 @@
         </div>
         <div class="divider"></div>
         <div class="item" data-show-all="true"><i>All</i></div>
-        {{#each ViewBag.Groups}}
-        <div class="item">{{.}}</div>
-        {{/each}}
+        @foreach (var group in Model.Groups)
+        {
+            <div class="item">@group</div>
+        }
     </div>
 </div>
-<a class="ui right floated primary button" href="{{ActionUrl 'New'}}">
+<a class="ui right floated primary button" asp-action="New">
     <i class="plus icon"></i>New
 </a>
 
@@ -39,28 +43,41 @@
         </tr>
     </thead>
     <tbody>
-        {{#each Model}}
-        <tr>
-            <td class="job-name">
-                <a href="{{ActionUrl 'Edit' @ControllerName group=Group name=JobName}}" title="{{Description}}">{{JobName}}</a>
-            </td>
-            <td class="job-group">{{Group}}</td>
-            <td class="job-type">{{Type}}</td>
-            <td class="next-fire-time"></td>
-            <td class="job-histogram">{{>Histogram History}}</td>
-            <td>
-                {{#if Persist}}<div class="ui mini green label" title="Persist Job Data">P</div>{{/if}}
-                {{#if Recovery}}<div class="ui mini purple label" title="Request Recovery">R</div>{{/if}}
-                {{#if Concurrent}}<div class="ui mini orange label" title="Concurrent">C</div>{{/if}}
-            </td>
-        </tr>
-        {{/each}}
+        @foreach (var job in Model.Jobs)
+        {
+            <tr>
+                <td class="job-name">
+                    <a asp-action="Edit" asp-all-route-data="@job.EditRouteData()" title="@job.Description">@job.JobName</a>
+                </td>
+                <td class="job-group">@job.Group</td>
+                <td class="job-type">@job.Type</td>
+                <td class="next-fire-time"></td>
+                <td class="job-histogram">
+                    <vc:histogram histogram="job.History" />
+                </td>
+                <td>
+                    @if (job.Persist)
+                    {
+                        <div class="ui mini green label" title="Persist Job Data">P</div>
+                    }
+                    @if (job.Recovery)
+                    {
+                        <div class="ui mini purple label" title="Request Recovery">R</div>
+                    }
+                    @if (job.Concurrent)
+                    {
+                        <div class="ui mini orange label" title="Concurrent">C</div>
+                    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
-{{#unless Model}}
-{{>EmptyList 'job'}}
-{{/unless}}
+@if (!Model.Jobs.Any())
+{
+    <vc:no-results name="job" />
+}
 
 <div style="display:none">
     <div class="ui small vertical menu borderless" id="job-context-menu">

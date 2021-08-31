@@ -1,0 +1,18 @@
+﻿@model IEnumerable<SilkierQuartz.Models.JobAdditionalDataViewModel>
+
+<table>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr data-row="@item.Group.@item.JobName">
+                <td class="next-fire-time">@item.NextFireTime</td>
+                @if (item.History is object)
+                {
+                    <td class="job-histogram">
+                        <vc:histogram histogram="item.History" />
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

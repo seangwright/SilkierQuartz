@@ -6,7 +6,6 @@ using Quartz.Impl;
 using SilkierQuartz;
 using SilkierQuartz.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -22,29 +21,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             return app.ApplicationServices.GetRequiredService<ISchedulerFactory>().GetScheduler().Result;
         }
-        /// <summary>
-        ///  Returns a handle to the Scheduler with the given name, if it exists.
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="schedName"></param>
-        /// <returns></returns>
-        public static IScheduler GetScheduler(this IApplicationBuilder app, string schedName)
-        {
-            return app.ApplicationServices.GetRequiredService<ISchedulerFactory>().GetScheduler(schedName).Result;
-        }
-        /// <summary>
-        /// Returns handles to all known Schedulers (made by any SchedulerFactory within  this app domain.
-        /// </summary>
-        /// <param name="app"></param>
-        /// <returns></returns>
-        public static IReadOnlyList<IScheduler> GetAllSchedulers(this IApplicationBuilder app)
-        {
-            return app.ApplicationServices.GetRequiredService<ISchedulerFactory>().GetAllSchedulers().Result;
-        }
-
-        [Obsolete("We recommend UseSilkierQuartz")]
-        public static IApplicationBuilder UseQuartzmin(this IApplicationBuilder app, Action<Services> configure = null)
-            => app.UseSilkierQuartz(configure);
 
         /// <summary>
         /// Use SilkierQuartz and automatically discover IJob subclasses with SilkierQuartzAttribute

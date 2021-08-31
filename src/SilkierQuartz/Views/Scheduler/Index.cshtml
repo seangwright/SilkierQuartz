@@ -1,41 +1,46 @@
-﻿{{!<Layout}}
-{{ViewBag Title='Scheduler'}}
-{{ViewBag ShowFooter=true}}
+﻿@model SilkierQuartz.Models.SchedulerViewModel
+
+@{
+    ViewBag.Title = "Scheduler";
+    ViewBag.ShowFooter = true;
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
 
-{{#with Model}}
+
 <div id="scheduler-dashboard">
     <div id="msg-panel"></div>
 
     <h3 class="ui dividing header" style="margin-top: 0px">Overview</h3>
 
     <div class="ui inverted statistic" style="background-color: #0c5a0c; background-image: linear-gradient(#107c10, #0c5a0c);">
-        <div class="value"><i class="small check icon"></i> {{ExecutedJobs}}</div>
+        <div class="value"><i class="small check icon"></i> @Model.ExecutedJobs</div>
         <div class="label">Jobs executed</div>
     </div>
 
     <div class="ui inverted statistic" style="background-color: #c42121; background-image: linear-gradient(#db2828, #c42121);">
-        <div class="value"><i class="small close icon"></i> {{FailedJobs}}</div>
+        <div class="value"><i class="small close icon"></i> @Model.FailedJobs</div>
         <div class="label">Jobs failed</div>
     </div>
 
     <div class="ui inverted statistic" style="background-color: #1c70b0; background-image: linear-gradient(#2185d0, #1c70b0);">
-        <div class="value"><i class="small play icon"></i> {{ExecutingJobs}}</div>
+        <div class="value"><i class="small play icon"></i> @Model.ExecutingJobs</div>
         <div class="label">Jobs executing</div>
     </div>
 
     <div class="ui statistic" style="background-color: #f0f0f0;">
         <div class="value">
-            <div style="height: 50px" class="dashboard-histogram">{{>Histogram History}}</div>
+            <div style="height: 50px" class="dashboard-histogram">
+                <vc:histogram histogram="Model.History" />
+            </div>
         </div>
         <div class="label">Latest Activity</div>
     </div>
 
     <div class="ui statistic" style="box-shadow: none">
         <div class="inline-stats">
-            <span>{{JobsCount}}</span> jobs<br>
-            <span>{{TriggerCount}}</span> triggers
+            <span>@Model.JobsCount</span> jobs<br>
+            <span>@Model.TriggerCount</span> triggers
         </div>
     </div>
 
@@ -48,19 +53,19 @@
                 <tbody>
                     <tr>
                         <td style="min-width: 220px">In Standby Mode</td>
-                        <td>{{Upper MetaData.InStandbyMode}}</td>
+                        <td>@Model.MetaData.InStandbyMode.ToString().ToUpperInvariant()</td>
                     </tr>
                     <tr>
-                       <td>Running Since</td>
-                        <td>{{RunningSince}} {{UtcLabel}}</td>
+                        <td>Running Since</td>
+                        <td>@Model.RunningSince @Model.UtcLabel</td>
                     </tr>
                     <tr>
                         <td>Shutdown</td>
-                        <td>{{Upper MetaData.Shutdown}}</td>
+                        <td>@Model.MetaData.Shutdown.ToString().ToUpperInvariant()</td>
                     </tr>
                     <tr>
                         <td>Started</td>
-                        <td>{{Upper MetaData.Started}}</td>
+                        <td>@Model.MetaData.Started.ToString().ToUpperInvariant()</td>
                     </tr>
                 </tbody>
             </table>
@@ -69,11 +74,15 @@
             <h3 class="ui dividing header">Actions</h3>
 
             <p style="margin-top: 1em">
-                {{#if MetaData.InStandbyMode}}
-                <button class="ui small button green" id="btn-start"><i class="play icon"></i>Start</button>
-                {{else}}
-                <button class="ui small button grey" id="btn-standby"><i class="stop icon"></i>Standby</button>
-                {{/if}}
+                @if (Model.MetaData.InStandbyMode)
+                {
+                    <button class="ui small button green" id="btn-start"><i class="play icon"></i>Start</button>
+                }
+                else
+                {
+                    <button class="ui small button grey" id="btn-standby"><i class="stop icon"></i>Standby</button>
+                }
+
                 <button class="ui small button red" id="btn-shutdown"><i class="power icon"></i>Shutdown</button>
                 <button class="ui small button" id="btn-pause"><i class="pause icon"></i>Pause All</button>
                 <button class="ui small button" id="btn-resume"><i class="play icon"></i>Resume All</button>
@@ -90,31 +99,31 @@
         <tbody>
             <tr>
                 <td style="min-width: 220px">Machine Name</td>
-                <td>{{MachineName}}</td>
+                <td>@Model.MachineName</td>
             </tr>
             <tr>
                 <td>Application</td>
-                <td>{{Application}}</td>
+                <td>@Model.Application</td>
             </tr>
             <tr>
                 <td>Scheduler Name</td>
-                <td>{{MetaData.SchedulerName}}</td>
+                <td>@Model.MetaData.SchedulerName</td>
             </tr>
             <tr>
                 <td>Scheduler Instance Id</td>
-                <td>{{MetaData.SchedulerInstanceId}}</td>
+                <td>@Model.MetaData.SchedulerInstanceId</td>
             </tr>
             <tr>
                 <td>Scheduler Remote</td>
-                <td>{{Upper MetaData.SchedulerRemote}}</td>
+                <td>@Model.MetaData.SchedulerRemote.ToString().ToUpperInvariant()</td>
             </tr>
             <tr>
                 <td>Scheduler Type</td>
-                <td>{{MetaData.SchedulerType.AssemblyQualifiedName}}</td>
+                <td>@Model.MetaData.SchedulerType.AssemblyQualifiedName</td>
             </tr>
             <tr>
                 <td>Version</td>
-                <td>{{MetaData.Version}}</td>
+                <td>@Model.MetaData.Version</td>
             </tr>
         </tbody>
     </table>
@@ -124,15 +133,15 @@
         <tbody>
             <tr>
                 <td style="min-width: 220px">Job Store Clustered</td>
-                <td>{{Upper MetaData.JobStoreClustered}}</td>
+                <td>@Model.MetaData.JobStoreClustered.ToString().ToUpperInvariant()</td>
             </tr>
             <tr>
                 <td>Job Store Supports Persistence</td>
-                <td>{{Upper MetaData.JobStoreSupportsPersistence}}</td>
+                <td>@Model.MetaData.JobStoreSupportsPersistence.ToString().ToUpperInvariant()</td>
             </tr>
             <tr>
                 <td>Job Store Type</td>
-                <td>{{MetaData.JobStoreType.AssemblyQualifiedName}}</td>
+                <td>@Model.MetaData.JobStoreType.AssemblyQualifiedName</td>
             </tr>
         </tbody>
     </table>
@@ -142,11 +151,11 @@
         <tbody>
             <tr>
                 <td style="min-width: 220px">Thread Pool Size</td>
-                <td>{{MetaData.ThreadPoolSize}}</td>
+                <td>@Model.MetaData.ThreadPoolSize</td>
             </tr>
             <tr>
                 <td>Thread Pool Type</td>
-                <td>{{MetaData.ThreadPoolType.AssemblyQualifiedName}}</td>
+                <td>@Model.MetaData.ThreadPoolType.AssemblyQualifiedName</td>
             </tr>
         </tbody>
     </table>
@@ -163,8 +172,6 @@
         <div class="ui cancel button">Cancel</div>
     </div>
 </div>
-
-{{/with}}
 
 <script>
     initHistogramTooltips($('.histogram > .bar'));

@@ -26,7 +26,7 @@ namespace SilkierQuartz.Models
         const string ValueField = "data-map[value]";
         const string LastItemField = "data-map[lastItem]";
 
-        public static JobDataMapItemBase FromDictionary(Dictionary<string, object> formData, Services services)
+        public static JobDataMapItemBase FromDictionary(Dictionary<string, object> formData)
         {
             var valueFormData = new Dictionary<string, object>();
 
@@ -41,7 +41,7 @@ namespace SilkierQuartz.Models
                 }
                 if (item.Key == HandlerField)
                 {
-                    result.SelectedType = services.TypeHandlers.Deserialize((string)item.Value);
+                    result.SelectedType = TypeHandlerService.Deserialize((string)item.Value);
                     continue;
                 }
                 if (item.Key == TypeField)

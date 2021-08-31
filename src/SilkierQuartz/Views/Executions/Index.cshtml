@@ -1,5 +1,8 @@
-﻿{{!<Layout}}
-{{ViewBag Title='Executions'}}
+﻿@model IEnumerable<SilkierQuartz.Models.ExecutionViewModel>
+
+@{
+    ViewBag.Title = "Executions";
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
 
@@ -17,21 +20,26 @@
         </tr>
     </thead>
     <tbody>
-        {{#each Model}}
-        <tr>
-            <td><a href="{{ActionUrl 'Edit' 'Jobs' group=JobGroup name=JobName}}">{{JobGroup}}.{{JobName}}</a></td>
-            <td><a href="{{ActionUrl 'Edit' 'Triggers' group=TriggerGroup name=TriggerName}}">{{TriggerGroup}}.{{TriggerName}}</a></td>
-            <td>{{ScheduledFireTime}}</td>
-            <td>{{ActualFireTime}}</td>
-            <td>{{RunTime}}</td>
-            <td style="text-align: right"><button class="ui super tiny red button btn-interrupt" data-id="{{Id}}"><i class="stop icon"></i>Interrupt</button></td>
-        </tr>
-        {{/each}}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td><a asp-controller="Jobs" asp-action="Edit" asp-all-route-data="item.JobsRouteData()">@item.JobGroup.@item.JobName</a></td>
+                <td><a asp-controller="Triggers" asp-action="Edit" asp-all-route-data="item.TriggersRouteData()">@item.TriggerGroup.@item.TriggerName</a></td>
+                <td>@item.ScheduledFireTime</td>
+                <td>@item.ActualFireTime</td>
+                <td>@item.RunTime</td>
+                <td style="text-align: right"><button class="ui super tiny red button btn-interrupt" data-id="@item.Id"><i class="stop icon"></i>Interrupt</button></td>
+            </tr>
+        }
+
+
     </tbody>
 </table>
-{{#unless Model}}
-{{>EmptyList ''}}
-{{/unless}}
+
+@if (!Model.Any())
+{
+    <vc:no-results name="" />
+}
 
 <script>
 

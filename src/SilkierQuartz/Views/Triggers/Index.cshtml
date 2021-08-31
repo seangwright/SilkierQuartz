@@ -1,5 +1,8 @@
-﻿{{!<Layout}}
-{{ViewBag Title='Triggers'}}
+﻿@model SilkierQuartz.Models.TriggersViewModel
+
+@{
+    ViewBag.Title = "Triggers";
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
 <div class="ui small left icon input">
@@ -16,12 +19,13 @@
         </div>
         <div class="divider"></div>
         <div class="item" data-show-all="true"><i>All</i></div>
-        {{#each ViewBag.Groups}}
-        <div class="item">{{.}}</div>
-        {{/each}}
+        @foreach (var group in Model.Groups)
+        {
+            <div class="item">@group</div>
+        }
     </div>
 </div>
-<a class="ui right floated primary button" href="{{ActionUrl 'New'}}">
+<a class="ui right floated primary button" asp-action="New">
     <i class="plus icon"></i>New
 </a>
 
@@ -41,42 +45,57 @@
         </tr>
     </thead>
     <tbody>
-        {{#each Model}}
-        {{#if JobHeaderSeparator}}
-        <tr class="job-key">
-            <td class="job-name">
-                <a href="{{ActionUrl 'Edit' 'Jobs' group=JobGroup name=JobName}}">{{JobName}}</a>
-            </td>
-            <td class="job-group">{{JobGroup}}</td>
-            <td colspan="6" style="text-align: right">
-                <a href="{{ActionUrl 'PauseJob' @ControllerName}}" class="ui super tiny button btn-pause-all"><i class="pause icon"></i>Pause All</a>
-                <a href="{{ActionUrl 'ResumeJob' @ControllerName}}" class="ui super tiny button btn-resume-all"><i class="play icon"></i>Resume All</a>
-            </td>
-        </tr>
-        {{/if}}
-
-        <tr>
-            <td class="trigger-name">
-                {{#if IsPaused}}<i class="small pause icon" title="Paused"></i>{{/if}}
-                <a href="{{ActionUrl 'Edit' @ControllerName group=TriggerGroup name=TriggerName}}" title="{{Description}}">{{TriggerName}}</a>
-            </td>
-            <td class="trigger-group">{{TriggerGroup}}</td>
-            <td class="schedule-desc" data-content="{{ScheduleDescription}}">
-                <i class="{{TypeIcon}} icon"></i>{{TypeString}}
-            </td>
-            <td class="trigger-start">{{nvl StartTime "N / A"}}</td>
-            <td class="trigger-end">{{nvl EndTime "N / A"}}</td>
-            <td class="trigger-last-fire">{{nvl LastFireTime "N / A"}}</td>
-            <td class="trigger-next-fire">{{nvl NextFireTime "N / A"}}</td>
-            <td class="trigger-histogram">{{>Histogram History}}</td>
-        </tr>
-        {{/each}}
+        @foreach (var trigger in Model.Triggers)
+        {
+            @if (trigger.JobHeaderSeparator)
+            {
+                <tr class="job-key">
+                    <td class="job-name">
+                        <a asp-controller="Jobs" asp-action="Edit" asp-all-route-data="@trigger.EditJobRouteData()">@trigger.JobName</a>
+                    </td>
+                    <td class="job-group">@trigger.JobGroup</td>
+                    <td colspan="6" style="text-align: right">
+                        <a asp-action="PauseJob" class="ui super tiny button btn-pause-all"><i class="pause icon"></i>Pause All</a>
+                        <a asp-action="ResumeJob" class="ui super tiny button btn-resume-all"><i class="play icon"></i>Resume All</a>
+                    </td>
+                </tr>
+            }
+            <tr>
+                <td class="trigger-name">
+                    @if (trigger.IsPaused)
+                    {
+                        <i class="small pause icon" title="Paused"></i>
+                    }
+                    <a asp-action="Edit" asp-all-route-data="@trigger.EditRouteData()" title="@trigger.Description">@trigger.TriggerName</a>
+                </td>
+                <td class="trigger-group">@trigger.TriggerGroup</td>
+                <td class="schedule-desc" data-content="@trigger.ScheduleDescription">
+                    <i class="@trigger.TypeIcon icon"></i>@trigger.TypeString
+                </td>
+                <td class="trigger-start">
+                    @(trigger.StartTime ?? "N/A")
+                </td>
+                <td class="trigger-end">
+                    @(trigger.EndTime ?? "N/A")
+                </td>
+                <td class="trigger-last-fire">
+                    @(trigger.LastFireTime ?? "N/A")
+                </td>
+                <td class="trigger-next-fire">
+                    @(trigger.NextFireTime ?? "N/A")
+                </td>
+                <td class="trigger-histogram">
+                    <vc:histogram histogram="trigger.History" />
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
-{{#unless Model}}
-{{>EmptyList 'trigger'}}
-{{/unless}}
+@if (!Model.Triggers.Any())
+{
+    <vc:no-results name="triggers" />
+}
 
 <div style="display:none">
     <div class="ui small vertical menu borderless" id="trigger-context-menu">

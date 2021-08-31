@@ -21,8 +21,8 @@ namespace SilkierQuartz.Controllers
             TypeHandlerBase selectedType, targetType;
             try
             {
-                selectedType = Services.TypeHandlers.Deserialize((string)formData.First(x => x.Key == "selected-type").Value);
-                targetType = Services.TypeHandlers.Deserialize((string)formData.First(x => x.Key == "target-type").Value);
+                selectedType = TypeHandlerService.Deserialize((string)formData.First(x => x.Key == "selected-type").Value);
+                targetType = TypeHandlerService.Deserialize((string)formData.First(x => x.Key == "target-type").Value);
             }
             catch (JsonSerializationException ex) when (ex.Message.StartsWith("Could not create an instance of type"))
             {

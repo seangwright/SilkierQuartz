@@ -1,0 +1,68 @@
+﻿@model IEnumerable<SilkierQuartz.Models.HistoryViewModel>
+
+@{
+    ViewBag.Title = "History";
+}
+
+@if (!ViewBag.HistoryEnabled)
+{
+    <div class="ui negative message">
+        <div class="header" style="margin-bottom: 0.5em">Job history is not available.</div>
+        Enable ExecutionHistoryPlugin in Quartz configuration section.
+    </div>
+
+    return;
+}
+
+@if (Model.Any())
+{
+    <div class="ui message">
+        <i class="info circle icon"></i>
+        History is periodicaly purged. Only recent job executions are shown.
+    </div>
+}
+
+<table class="ui single line table highlight-rows" id="history-list">
+    <thead>
+        <tr>
+            <th>Job</th>
+            <th>Trigger</th>
+            <th>Scheduled Fire Time</th>
+            <th>Actual Fire Time</th>
+            <th>Finished Time</th>
+            <th>Run Time</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="job-key">
+                    <i class="@item.StateIcon icon" title="@item.State"></i>
+                    <a asp-controller="Jobs" asp-action="Edit" asp-all-route-data="item.JobsRouteData()">@item.JobGroup.@item.JobName</a>
+                </td>
+                <td class="trigger-name">
+                    <a asp-controller="Triggers" asp-action="Edit" asp-all-route-data="item.TriggersRouteData()">@item.TriggerGroup.@item.TriggerName</a>
+                </td>
+                <td>@item.ScheduledFireTimeUtc</td>
+                <td>@item.ActualFireTimeUtc</td>
+                <td>@item.FinishedTimeUtc</td>
+                <td>@item.Duration</td>
+            </tr>
+
+            @if (!string.IsNullOrWhiteSpace(item.Entity.ExceptionMessage))
+            {
+                <tr class="error-row">
+                    <td colspan="6">
+                        <p>@item.Entity.ExceptionMessage</p>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@if (!Model.Any())
+{
+    <vc:no-results name="" />
+}

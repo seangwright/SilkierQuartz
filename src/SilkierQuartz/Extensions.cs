@@ -21,9 +21,9 @@ namespace SilkierQuartz
             return typeHandlers.OrderBy(x => x.DisplayName).ToArray();
         }
 
-        public static JobDataMapItemBase[] GetModel(this IEnumerable<Dictionary<string, object>> formData, Services services)
+        public static JobDataMapItemBase[] GetModel(this IEnumerable<Dictionary<string, object>> formData)
         {
-            return formData.Select(x => JobDataMapItemBase.FromDictionary(x, services)).Where(x => !x.IsLast).ToArray();
+            return formData.Select(x => JobDataMapItemBase.FromDictionary(x)).Where(x => !x.IsLast).ToArray();
         }
 
         public static string ToDefaultFormat(this DateTime date)
@@ -175,10 +175,10 @@ namespace SilkierQuartz
             return builder.ToString();
         }
 
-        public static List<JobDataMapItem> GetJobDataMapModel(this IJobDetail job, Services services) => GetJobDataMapModelCore(job, services);
-        public static List<JobDataMapItem> GetJobDataMapModel(this ITrigger trigger, Services services) => GetJobDataMapModelCore(trigger, services);
+        public static List<JobDataMapItem> GetJobDataMapModel(this IJobDetail job, SilkierQuartzOptions options) => GetJobDataMapModelCore(job, options);
+        public static List<JobDataMapItem> GetJobDataMapModel(this ITrigger trigger, SilkierQuartzOptions options) => GetJobDataMapModelCore(trigger, options);
 
-        private static List<JobDataMapItem> GetJobDataMapModelCore(object jobOrTrigger, Services services)
+        private static List<JobDataMapItem> GetJobDataMapModelCore(object jobOrTrigger, SilkierQuartzOptions options)
         {
             List<JobDataMapItem> list = new List<JobDataMapItem>();
 
@@ -208,11 +208,11 @@ namespace SilkierQuartz
                 };
 
                 var typeHandlers = new List<TypeHandlerBase>();
-                typeHandlers.AddRange(services.Options.StandardTypes);
+                typeHandlers.AddRange(options.StandardTypes);
 
                 if (model.Value == null)
                 {
-                    model.SelectedType = services.Options.DefaultSelectedType;
+                    model.SelectedType = options.DefaultSelectedType;
                 }
                 else
                 {
@@ -294,10 +294,10 @@ namespace SilkierQuartz
             return TriggerType.Unknown;
         }
 
-        public static string GetScheduleDescription(this ITrigger trigger, Services services)
+        public static string GetScheduleDescription(this ITrigger trigger, SilkierQuartzOptions options)
         {
             if (trigger is ICronTrigger cr)
-                return CronExpressionDescriptor.ExpressionDescriptor.GetDescription(cr.CronExpressionString, services?.Options?.CronExpressionOptions);
+                return CronExpressionDescriptor.ExpressionDescriptor.GetDescription(cr.CronExpressionString, options.CronExpressionOptions);
             if (trigger is IDailyTimeIntervalTrigger dt)
                 return GetScheduleDescription(dt);
             if (trigger is ISimpleTrigger st)
@@ -424,12 +424,12 @@ namespace SilkierQuartz
             return lookup.Contains(key) ? lookup[key] : null;
         }
 
-        public static Histogram ToHistogram(this IEnumerable<ExecutionHistoryEntry> entries, bool detailed = false)
+        public static HistogramData ToHistogram(this IEnumerable<ExecutionHistoryEntry> entries, bool detailed = false)
         {
             if (entries == null || entries.Any() == false)
                 return null;
 
-            var hst = new Histogram();
+            var hst = new HistogramData();
             foreach (var entry in entries)
             {
                 TimeSpan? duration = null;

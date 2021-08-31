@@ -1,4 +1,5 @@
-﻿using SilkierQuartz.Helpers;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SilkierQuartz.Helpers;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -27,12 +28,12 @@ namespace SilkierQuartz.Models
         public string OldJobName { get; set; }
         public string OldGroup { get; set; }
 
-        public IEnumerable<string> GroupList { get; set; }
+        public IEnumerable<SelectListItem> GroupList { get; set; }
 
         [Required]
         public string Type { get; set; }
 
-        public IEnumerable<string> TypeList { get; set; }
+        public IEnumerable<SelectListItem> TypeList { get; set; }
 
         public string Description { get; set; }
 

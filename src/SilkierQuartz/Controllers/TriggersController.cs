@@ -8,23 +8,34 @@ using SilkierQuartz.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SilkierQuartz.Controllers
 {
     [Authorize(Policy = SilkierQuartzAuthenticationOptions.AuthorizationPolicyName)]
-    public class TriggersController : PageControllerBase
+    public class TriggersController : Controller
     {
-        [HttpGet]
-        public async Task<IActionResult> Index()
+        private readonly ISchedulerFactory factory;
+        private readonly SilkierQuartzOptions options;
+
+        public TriggersController(ISchedulerFactory factory, SilkierQuartzOptions options)
         {
-            var keys = (await Scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup())).OrderBy(x => x.ToString());
+            this.factory = factory;
+            this.options = options;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken token)
+        {
+            var scheduler = await factory.GetScheduler(token);
+            var keys = (await scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup(), token)).OrderBy(x => x.ToString());
             var list = new List<TriggerListItem>();
 
             foreach (var key in keys)
             {
-                var t = await GetTrigger(key);
-                var state = await Scheduler.GetTriggerState(key);
+                var t = await GetTrigger(key, token);
+                var state = await scheduler.GetTriggerState(key, token);
 
                 list.Add(new TriggerListItem()
                 {
@@ -35,8 +46,8 @@ namespace SilkierQuartz.Controllers
                     JobKey = t.JobKey.ToString(),
                     JobGroup = t.JobKey.Group,
                     JobName = t.JobKey.Name,
-                    ScheduleDescription = t.GetScheduleDescription(Services),
-                    History = Histogram.Empty,
+                    ScheduleDescription = t.GetScheduleDescription(options),
+                    History = HistogramData.Empty,
                     StartTime = t.StartTimeUtc.UtcDateTime.ToDefaultFormat(),
                     EndTime = t.FinalFireTimeUtc?.UtcDateTime.ToDefaultFormat(),
                     LastFireTime = t.GetPreviousFireTimeUtc()?.UtcDateTime.ToDefaultFormat(),
@@ -46,7 +57,7 @@ namespace SilkierQuartz.Controllers
                 });
             }
 
-            ViewBag.Groups = (await Scheduler.GetTriggerGroupNames()).GroupArray();
+            var groups = (await scheduler.GetTriggerGroupNames(token)).GroupArray();
 
             list = list.OrderBy(x => x.NextFireTime).ToList();
             string prevKey = null;
@@ -59,14 +70,15 @@ namespace SilkierQuartz.Controllers
                 }
             }
 
-            return View(list);
+            return View(new TriggersViewModel { Triggers = list, Groups = groups });
         }
 
         [HttpGet]
-        public async Task<IActionResult> New()
+        public async Task<IActionResult> New(CancellationToken token)
         {
-            var model = await TriggerPropertiesViewModel.Create(Scheduler);
-            var jobDataMap = new JobDataMapModel() { Template = JobDataMapItemTemplate };
+            var scheduler = await factory.GetScheduler(token);
+            var model = await TriggerPropertiesViewModel.Create(scheduler);
+            var jobDataMap = new JobDataMapModel() { Template = options.JobDataMapItemTemplate };
 
             model.IsNew = true;
 
@@ -77,16 +89,17 @@ namespace SilkierQuartz.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(string name, string group, bool clone = false)
+        public async Task<IActionResult> Edit(string name, string group, bool clone = false, CancellationToken token = default)
         {
             if (!EnsureValidKey(name, group)) return BadRequest();
 
+            var scheduler = await factory.GetScheduler(token);
             var key = new TriggerKey(name, group);
-            var trigger = await GetTrigger(key);
+            var trigger = await GetTrigger(key, token);
 
-            var jobDataMap = new JobDataMapModel() { Template = JobDataMapItemTemplate };
+            var jobDataMap = new JobDataMapModel() { Template = options.JobDataMapItemTemplate };
 
-            var model = await TriggerPropertiesViewModel.Create(Scheduler);
+            var model = await TriggerPropertiesViewModel.Create(scheduler);
 
             model.IsNew = clone;
             model.IsCopy = clone;
@@ -129,16 +142,17 @@ namespace SilkierQuartz.Controllers
                     throw new InvalidOperationException("Unsupported trigger type: " + trigger.GetType().AssemblyQualifiedName);
             }
 
-            jobDataMap.Items.AddRange(trigger.GetJobDataMapModel(Services));
+            jobDataMap.Items.AddRange(trigger.GetJobDataMapModel(options));
 
             return View("Edit", new TriggerViewModel() { Trigger = model, DataMap = jobDataMap });
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> Save([FromForm] TriggerViewModel model)
+        public async Task<IActionResult> Save([FromForm] TriggerViewModel model, CancellationToken token)
         {
+            var scheduler = await factory.GetScheduler(token);
             var triggerModel = model.Trigger;
-            var jobDataMap = (await Request.GetJobDataMapForm()).GetModel(Services);
+            var jobDataMap = (await Request.GetJobDataMapForm()).GetModel();
 
             var result = new ValidationResult();
 
@@ -173,11 +187,11 @@ namespace SilkierQuartz.Controllers
 
                 if (triggerModel.IsNew)
                 {
-                    await Scheduler.ScheduleJob(trigger);
+                    await scheduler.ScheduleJob(trigger, token);
                 }
                 else
                 {
-                    await Scheduler.RescheduleJob(new TriggerKey(triggerModel.OldTriggerName, triggerModel.OldTriggerGroup), trigger);
+                    await scheduler.RescheduleJob(new TriggerKey(triggerModel.OldTriggerName, triggerModel.OldTriggerGroup), trigger, token);
                 }
             }
 
@@ -185,47 +199,57 @@ namespace SilkierQuartz.Controllers
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> Delete([FromBody] KeyModel model)
+        public async Task<IActionResult> Delete([FromBody] KeyModel model, CancellationToken token)
         {
             if (!EnsureValidKey(model)) return BadRequest();
 
+            var scheduler = await factory.GetScheduler(token);
+
             var key = model.ToTriggerKey();
 
-            if (!await Scheduler.UnscheduleJob(key))
+            if (!await scheduler.UnscheduleJob(key, token))
                 throw new InvalidOperationException("Cannot unschedule job " + key);
 
             return NoContent();
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> Resume([FromBody] KeyModel model)
+        public async Task<IActionResult> Resume([FromBody] KeyModel model, CancellationToken token)
         {
             if (!EnsureValidKey(model)) return BadRequest();
-            await Scheduler.ResumeTrigger(model.ToTriggerKey());
+
+            var scheduler = await factory.GetScheduler(token);
+            await scheduler.ResumeTrigger(model.ToTriggerKey(), token);
             return NoContent();
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> Pause([FromBody] KeyModel model)
+        public async Task<IActionResult> Pause([FromBody] KeyModel model, CancellationToken token)
         {
             if (!EnsureValidKey(model)) return BadRequest();
-            await Scheduler.PauseTrigger(model.ToTriggerKey());
+
+            var scheduler = await factory.GetScheduler(token);
+            await scheduler.PauseTrigger(model.ToTriggerKey(), token);
             return NoContent();
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> PauseJob([FromBody] KeyModel model)
+        public async Task<IActionResult> PauseJob([FromBody] KeyModel model, CancellationToken token)
         {
             if (!EnsureValidKey(model)) return BadRequest();
-            await Scheduler.PauseJob(model.ToJobKey());
+
+            var scheduler = await factory.GetScheduler(token);
+            await scheduler.PauseJob(model.ToJobKey(), token);
             return NoContent();
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> ResumeJob([FromBody] KeyModel model)
+        public async Task<IActionResult> ResumeJob([FromBody] KeyModel model, CancellationToken token)
         {
             if (!EnsureValidKey(model)) return BadRequest();
-            await Scheduler.ResumeJob(model.ToJobKey());
+
+            var scheduler = await factory.GetScheduler(token);
+            await scheduler.ResumeJob(model.ToJobKey(), token);
             return NoContent();
         }
 
@@ -240,7 +264,7 @@ namespace SilkierQuartz.Controllers
 
             try
             {
-                desc = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(cron, Services.Options?.CronExpressionOptions);
+                desc = CronExpressionDescriptor.ExpressionDescriptor.GetDescription(cron, options.CronExpressionOptions);
             }
             catch
             { }
@@ -266,9 +290,10 @@ namespace SilkierQuartz.Controllers
             return Json(new { Description = desc, Next = nextDates });
         }
 
-        private async Task<ITrigger> GetTrigger(TriggerKey key)
+        private async Task<ITrigger> GetTrigger(TriggerKey key, CancellationToken token)
         {
-            var trigger = await Scheduler.GetTrigger(key);
+            var scheduler = await factory.GetScheduler(token);
+            var trigger = await scheduler.GetTrigger(key, token);
 
             if (trigger == null)
                 throw new InvalidOperationException("Trigger " + key + " not found.");
@@ -277,16 +302,17 @@ namespace SilkierQuartz.Controllers
         }
 
         [HttpGet, JsonErrorResponse]
-        public async Task<IActionResult> AdditionalData()
+        public async Task<IActionResult> AdditionalData(CancellationToken token)
         {
-            var keys = await Scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup());
-            var history = await Scheduler.Context.GetExecutionHistoryStore().FilterLastOfEveryTrigger(10);
+            var scheduler = await factory.GetScheduler(token);
+            var keys = await scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup(), token);
+            var history = await scheduler.Context.GetExecutionHistoryStore().FilterLastOfEveryTrigger(10);
             var historyByTrigger = history.ToLookup(x => x.Trigger);
 
-            var list = new List<object>();
+            var list = new List<TriggerAdditionalDataViewModel>();
             foreach (var key in keys)
             {
-                list.Add(new
+                list.Add(new TriggerAdditionalDataViewModel
                 {
                     TriggerName = key.Name,
                     TriggerGroup = key.Group,
@@ -299,9 +325,9 @@ namespace SilkierQuartz.Controllers
 
 
         [HttpGet]
-        public Task<IActionResult> Duplicate(string name, string group)
+        public Task<IActionResult> Duplicate(string name, string group, CancellationToken token)
         {
-            return Edit(name, group, clone: true);
+            return Edit(name, group, clone: true, token: token);
         }
 
         bool EnsureValidKey(string name, string group) => !(string.IsNullOrEmpty(name) || string.IsNullOrEmpty(group));

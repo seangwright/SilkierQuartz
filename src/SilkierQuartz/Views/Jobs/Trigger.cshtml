@@ -1,5 +1,8 @@
-﻿{{!<Layout}}
-{{ViewBag Title='Trigger Job'}}
+﻿@model SilkierQuartz.Models.JobTriggerViewModel
+
+@{ 
+    ViewBag.Title = "Trigger Job";
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
 <form class="ui form" id="form" method="post" enctype="multipart/form-data">
@@ -7,15 +10,19 @@
         <div style="float: right">
             <div class="ui green button" id="btn-trigger"><i class="play icon"></i>Trigger Now</div>
         </div>
-        <h1 class="ui left floated header">{{ViewBag.Group}}.{{ViewBag.JobName}}<a title="Go to edit page" href="{{ActionUrl 'Edit' group=ViewBag.Group name=ViewBag.JobName}}"><i class="external alternate tiny icon"></i></a></h1>
+        <h1 class="ui left floated header">@Model.Group.@Model.JobName
+            <a title="Go to edit page" asp-action="Edit" asp-all-route-data="Model.TriggerEditRouteData()">
+                <i class="external alternate tiny icon"></i>
+            </a>
+        </h1>
     </div>
 
     <div class="ui segment">
-        <input type="hidden" name="name" value="{{ViewBag.JobName}}" id="jobName" />
-        <input type="hidden" name="group" value="{{ViewBag.Group}}" id="jobGroup" />
+        <input type="hidden" name="name" value="@Model.JobName" id="jobName" />
+        <input type="hidden" name="group" value="@Model.Group" id="jobGroup" />
         <h3 class="ui dividing header" style="margin-top: .3em">Job Data Map Overrides</h3>
 
-        {{>JobDataMap Model}}
+        <vc:job-data-map map="Model.DataMap" />
     </div>
 </form>
 

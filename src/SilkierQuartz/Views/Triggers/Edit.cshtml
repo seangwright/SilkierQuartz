@@ -1,33 +1,43 @@
-﻿{{!<Layout}}
-{{#if Model.Trigger.IsNew}}
-    {{ViewBag Title='Add Trigger'}}
-{{else}}
-    {{ViewBag Title='Edit Trigger'}}
-{{/if}}
+﻿@model SilkierQuartz.Models.TriggerViewModel
+
+@{
+    ViewBag.Title = Model.Trigger.IsNew
+        ? "Add Trigger"
+        : "Edit Trigger";
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
 <form class="ui form" id="form" method="post" enctype="multipart/form-data">
     <div class="ui clearing basic segment" style="padding: 0px" id="header">
         <div style="float: right">
-            <a class="ui button" id="btn-discard" href="{{ActionUrl ''}}">Discard Changes</a>
-            {{#unless Model.Trigger.IsNew}}
-            <div class="negative ui button" id="btn-delete">Delete</div>
-            {{/unless}}
+            <a class="ui button" id="btn-discard" asp-action="Index">Discard Changes</a>
+            @if (!Model.Trigger.IsNew)
+            {
+                <div class="negative ui button" id="btn-delete">Delete</div>
+            }
             <div class="ui primary button" id="btn-save">Save</div>
         </div>
         <h1 class="ui left floated header">
-            {{#if Model.Trigger.IsNew}}Add Trigger{{else}}Edit Trigger "{{Model.Trigger.TriggerName}}"{{/if}}
+            @if (Model.Trigger.IsNew)
+            {
+                <text>Add Trigger</text>
+            }
+            else
+            {
+                <text>Edit Trigger</text> @Model.Trigger.TriggerName
+            }
         </h1>
     </div>
 
     <div class="ui segment">
-        {{#with Model.Trigger}}
-        <input type="hidden" name="trigger[isNew]" value="{{IsNew}}" />
-        {{#unless IsNew}}
-        <input type="hidden" name="trigger[oldTriggerName]" value="{{OldTriggerName}}" />
-        <input type="hidden" name="trigger[oldTriggerGroup]" value="{{OldTriggerGroup}}" />
-        <input type="hidden" name="trigger[job]" value="{{Job}}" />
-        {{/unless}}
+
+        <input type="hidden" asp-for="Trigger.IsNew" />
+        @if (!Model.Trigger.IsNew)
+        {
+            <input type="hidden" asp-for="Trigger.OldTriggerName" />
+            <input type="hidden" asp-for="Trigger.OldTriggerGroup" />
+            <input type="hidden" asp-for="Trigger.Job" />
+        }
         <div id="trigger-properties">
 
             <div class="field">
@@ -35,25 +45,25 @@
                 <div class="inline fields" id="trigger-type-radios">
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="trigger[type]" value="cron">
+                            <input type="radio" asp-for="Trigger.Type" value="cron">
                             <label>Cron</label>
                         </div>
                     </div>
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="trigger[type]" value="simple">
+                            <input type="radio" asp-for="Trigger.Type" value="simple">
                             <label>Simple</label>
                         </div>
                     </div>
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="trigger[type]" value="calendar">
+                            <input type="radio" asp-for="Trigger.Type" value="calendar">
                             <label>Calendar Interval</label>
                         </div>
                     </div>
                     <div class="field">
                         <div class="ui radio checkbox">
-                            <input type="radio" name="trigger[type]" value="daily">
+                            <input type="radio" asp-for="Trigger.Type" value="daily">
                             <label>Daily Time Interval</label>
                         </div>
                     </div>
@@ -73,11 +83,11 @@
             <div class="two fields">
                 <div class="field accept-error">
                     <label>Trigger Name</label>
-                    <input type="text" name="trigger[triggerName]" placeholder="Trigger Name" value="{{TriggerName}}" id="triggerName" />
+                    <input type="text" placeholder="Trigger Name" asp-for="Trigger.TriggerName" id="triggerName" />
                 </div>
                 <div class="field accept-error">
                     <label>Trigger Group</label>
-                    <input type="hidden" value="{{TriggerGroup}}" id="triggerGroup" />
+                    <input type="hidden" asp-for="Trigger.TriggerGroup" id="triggerGroup" />
                     <select class="ui search selection dropdown allow-additions" name="trigger[triggerGroup]">
                         <option value="">Trigger Group</option>
                         {{>DropdownOptions items=TriggerGroupList selected=TriggerGroup}}
@@ -87,7 +97,7 @@
 
             <div class="field accept-error">
                 <label>Description</label>
-                <textarea rows="2" name="trigger[description]">{{Description}}</textarea>
+                <textarea rows="2" asp-for="Trigger.Description"></textarea>
             </div>
 
             <div class="fields">
@@ -326,7 +336,7 @@
         {{/with}}
         <h3 class="ui dividing header">Job Data Map</h3>
 
-        {{>JobDataMap Model.DataMap}}
+        <vc:job-data-map map="Model.DataMap" />
     </div>
 </form>
 
@@ -342,7 +352,7 @@
 </div>
 
 <script>
-    const $misfireInstructionsMap = {{{ Model.Trigger.MisfireInstructionsJson }}};
+    const $misfireInstructionsMap = @Model.Trigger.MisfireInstructionsJson;
 
     $(function () {
         const

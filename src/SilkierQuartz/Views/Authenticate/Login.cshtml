@@ -1,29 +1,32 @@
-﻿{{!<Layout}}
-{{ViewBag Title='Login'}}
+﻿@model SilkierQuartz.Models.AuthenticateViewModel
+
+@{
+    ViewBag.Title = "Login";
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
-<form class="ui form" method="post" enctype="multipart/form-data">
+
+<form class="ui form" asp-controller="Authenticate" asp-action="Login" method="post" asp-route-returnurl="@ViewData["ReturnUrl"]">
     <div class="ui clearing basic segment" style="padding: 0px" id="header">
         <h1 class="ui left floated header">
             Login
         </h1>
     </div>
-    {{#with Model}}
+
     <div class="ui segment" style="width: 700px; height: 250px;">
         <div>
             <div class="field accept-error">
                 <label>Name</label>
-                <input type="text" placeholder="User Name" value="{{UserName}}" name="userName" />
+                <input asp-for="UserName" placeholder="User Name" />
             </div>
             <div class="field accept-error">
                 <label>Password</label>
-                <input type="password" placeholder="User Name" value="{{Password}}" name="password" />
+                <input asp-for="Password" />
             </div>
 
             <div class="field accept-error">
-                <div class="ui checkbox">                    
-                    <input type="checkbox" value="true" {{#if IsPersist}} checked {{/if}} name="isPersist" id="isPersist" />
-                    <input name="isPersist" type="hidden" value="false">
+                <div class="ui checkbox">
+                    <input asp-for="IsPersist" />
                     <label for="isPersist">Remember Me</label>
                 </div>
             </div>
@@ -34,12 +37,12 @@
             </div>
         </div>
     </div>
-    {{#if IsLoginError}}
-    <div class="ui negative message">
-        <p>User Name or Password is incorrect!</p>
-    </div>
-    {{/if}}
-    {{/with}}
+
+    @if (ViewContext.ModelState.Any())
+    {
+        <div asp-validation-summary="All" class="ui negative message">
+        </div>
+    }
 </form>
 
-<script src="Content/Scripts/post-validation.js"></script>
+<script src="/Content/Scripts/post-validation.js"></script>

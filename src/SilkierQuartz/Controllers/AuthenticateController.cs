@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace SilkierQuartz.Controllers
 {
     [AllowAnonymous]
-    public class AuthenticateController : PageControllerBase
+    public class AuthenticateController : Controller
     {
         private readonly SilkierQuartzAuthenticationOptions authenticationOptions;
 
@@ -25,7 +25,7 @@ namespace SilkierQuartz.Controllers
         {
             if (authenticationOptions.AccessRequirement == SilkierQuartzAuthenticationOptions.SimpleAccessRequirement.AllowAnonymous)
             {
-                return RedirectToAction(nameof(SchedulerController.Index), nameof(Scheduler));
+                return RedirectToAction(nameof(SchedulerController.Index), "Scheduler");
             }
 
             var silkierScheme = await schemes.GetSchemeAsync(authenticationOptions.AuthScheme);
@@ -44,11 +44,11 @@ namespace SilkierQuartz.Controllers
                 {
                     await SignIn(false);
 
-                    return RedirectToAction(nameof(SchedulerController.Index), nameof(Scheduler));
+                    return RedirectToScheduler();
                 }
                 else
                 {
-                    return RedirectToAction(nameof(SchedulerController.Index), nameof(Scheduler));
+                    return RedirectToScheduler();
                 }
             }
             else
@@ -61,7 +61,7 @@ namespace SilkierQuartz.Controllers
                 }
                 else
                 {
-                    return RedirectToAction(nameof(SchedulerController.Index), nameof(Scheduler));
+                    return RedirectToScheduler();
                 }
             }
         }
@@ -76,13 +76,14 @@ namespace SilkierQuartz.Controllers
                 string.Compare(request.Password, authenticationOptions.UserPassword,
                     StringComparison.InvariantCulture) != 0)
             {
-                request.IsLoginError = true;
+                ModelState.AddModelError("credentials", "Username or Password is incorrect");
+
                 return View(request);
             }
 
             await SignIn(request.IsPersist);
 
-            return RedirectToAction(nameof(SchedulerController.Index), nameof(Scheduler));
+            return RedirectToScheduler();
         }
 
         [HttpGet]
@@ -117,5 +118,8 @@ namespace SilkierQuartz.Controllers
             await HttpContext.SignInAsync(authenticationOptions.AuthScheme, new ClaimsPrincipal(userIdentity),
                 authProperties);
         }
+
+        private RedirectToActionResult RedirectToScheduler() =>
+            RedirectToAction(nameof(SchedulerController.Index), "Scheduler");
     }
 }

@@ -1,0 +1,8 @@
+﻿@model SilkierQuartz.Models.HistogramData
+
+<div class="histogram" style="width:@(Model.ComputedWidth)px;">
+    @foreach (var bar in Model.Bars)
+    {
+        <div class="bar @bar.CssClass" style="left:@(bar.ComputedLeft)px; height:@(bar.Percentage)%" data-tooltip-html="@bar.Tooltip"></div>
+    }
+</div>

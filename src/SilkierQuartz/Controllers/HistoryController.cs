@@ -1,29 +1,41 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Quartz;
 using Quartz.Plugins.RecentHistory;
+using SilkierQuartz.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SilkierQuartz.Controllers
 {
     [Authorize(Policy = SilkierQuartzAuthenticationOptions.AuthorizationPolicyName)]
-    public class HistoryController : PageControllerBase
+    public class HistoryController : Controller
     {
-        [HttpGet]
-        public async Task<IActionResult> Index()
+        private readonly ISchedulerFactory factory;
+
+        public HistoryController(ISchedulerFactory factory)
         {
-            var store = Scheduler.Context.GetExecutionHistoryStore();
+            this.factory = factory;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken token)
+        {
+            var scheduler = await factory.GetScheduler(token);
+
+            var store = scheduler.Context.GetExecutionHistoryStore();
 
             ViewBag.HistoryEnabled = store != null;
 
             if (store == null)
-                return View(null);
+                return View(Enumerable.Empty<HistoryViewModel>());
 
             IEnumerable<ExecutionHistoryEntry> history = await store.FilterLast(100);
 
-            var list = new List<object>();
+            var list = new List<HistoryViewModel>();
 
             foreach (var h in history.OrderByDescending(x => x.ActualFireTimeUtc))
             {
@@ -50,7 +62,7 @@ namespace SilkierQuartz.Controllers
                 var jobKey = h.Job.Split('.');
                 var triggerKey = h.Trigger.Split('.');
 
-                list.Add(new
+                list.Add(new HistoryViewModel
                 {
                     Entity = h,
 

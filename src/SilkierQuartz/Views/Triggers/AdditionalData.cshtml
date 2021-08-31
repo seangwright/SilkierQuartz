@@ -1,0 +1,17 @@
+﻿@model IEnumerable<SilkierQuartz.Models.TriggerAdditionalDataViewModel>
+
+<table>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr data-row="@item.TriggerGroup.@item.TriggerName">
+                @if (item.History is object)
+                {
+                    <td class="trigger-histogram">
+                        <vc:histogram histogram="item.History" />
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

@@ -6,23 +6,34 @@ using SilkierQuartz.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SilkierQuartz.Controllers
 {
     [Authorize(Policy = SilkierQuartzAuthenticationOptions.AuthorizationPolicyName)]
-    public class CalendarsController : PageControllerBase
+    public class CalendarsController : Controller
     {
-        [HttpGet]
-        public async Task<IActionResult> Index()
+        private readonly ISchedulerFactory factory;
+
+        public CalendarsController(ISchedulerFactory factory)
         {
-            var calendarNames = await Scheduler.GetCalendarNames();
+            this.factory = factory;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken token)
+        {
+            var scheduler = await factory.GetScheduler(token);
+
+            var calendarNames = await scheduler.GetCalendarNames(token);
 
             var list = new List<CalendarListItem>();
 
             foreach (string name in calendarNames)
             {
-                var cal = await Scheduler.GetCalendar(name);
+                var cal = await scheduler.GetCalendar(name);
+
                 list.Add(new CalendarListItem() { Name = name, Description = cal.Description, Type = cal.GetType() });
             }
 
@@ -42,9 +53,11 @@ namespace SilkierQuartz.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(string name)
+        public async Task<IActionResult> Edit(string name, CancellationToken token)
         {
-            var calendar = await Scheduler.GetCalendar(name);
+            var scheduler = await factory.GetScheduler(token);
+
+            var calendar = await scheduler.GetCalendar(name);
 
             var model = calendar.Flatten().Select(x => CalendarViewModel.FromCalendar(x)).ToArray();
 
@@ -66,7 +79,7 @@ namespace SilkierQuartz.Controllers
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> Save([FromBody] CalendarViewModel[] chain, bool isNew)
+        public async Task<IActionResult> Save([FromBody] CalendarViewModel[] chain, bool isNew, CancellationToken token)
         {
             var result = new ValidationResult();
 
@@ -90,8 +103,10 @@ namespace SilkierQuartz.Controllers
 
                 ICalendar existing = null;
 
+                var scheduler = await factory.GetScheduler(token);
+
                 if (isNew == false)
-                    existing = await Scheduler.GetCalendar(name);
+                    existing = await scheduler.GetCalendar(name);
 
                 ICalendar root = null, current = null;
                 for (int i = 0; i < chain.Length; i++)
@@ -116,7 +131,7 @@ namespace SilkierQuartz.Controllers
                 }
                 else
                 {
-                    await Scheduler.AddCalendar(name, root, replace: true, updateTriggers: true);
+                    await scheduler.AddCalendar(name, root, replace: true, updateTriggers: true);
                 }
             }
 
@@ -129,9 +144,11 @@ namespace SilkierQuartz.Controllers
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> Delete([FromBody] DeleteArgs args)
+        public async Task<IActionResult> Delete([FromBody] DeleteArgs args, CancellationToken token)
         {
-            if (!await Scheduler.DeleteCalendar(args.Name))
+            var scheduler = await factory.GetScheduler(token);
+
+            if (!await scheduler.DeleteCalendar(args.Name))
                 throw new InvalidOperationException("Cannot delete calendar " + args.Name);
 
             return NoContent();

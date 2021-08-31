@@ -5,7 +5,7 @@ using System.Web;
 
 namespace SilkierQuartz.Models
 {
-    public class Histogram
+    public class HistogramData
     {
         public List<Bar> Bars { get; set; } = new List<Bar>();
 
@@ -44,9 +44,9 @@ namespace SilkierQuartz.Models
             }
         }
 
-        public static Histogram CreateEmpty()
+        public static HistogramData CreateEmpty()
         {
-            var hst = new Histogram();
+            var hst = new HistogramData();
 
             for (int i = 0; i < 10; i++)
             {
@@ -59,8 +59,8 @@ namespace SilkierQuartz.Models
             return hst;
         }
 
-        private static readonly Lazy<Histogram> _empty = new Lazy<Histogram>(CreateEmpty);
+        private static readonly Lazy<HistogramData> _empty = new Lazy<HistogramData>(CreateEmpty);
 
-        public static Histogram Empty => _empty.Value;
+        public static HistogramData Empty => _empty.Value;
     }
 }

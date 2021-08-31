@@ -1,10 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
 
 namespace SilkierQuartz.Models
 {
+    public class TriggersViewModel
+    {
+        public IEnumerable<TriggerListItem> Triggers { get; set; }
+        public IEnumerable<string> Groups { get; set; }
+    }
+
     public class TriggerListItem
     {
         public string JobKey { get; set; }
@@ -34,7 +37,7 @@ namespace SilkierQuartz.Models
 
         public string ScheduleDescription { get; set; }
 
-        public Histogram History { get; set; }
+        public HistogramData History { get; set; }
 
         public bool JobHeaderSeparator { get; set; }
 
@@ -69,5 +72,18 @@ namespace SilkierQuartz.Models
             }
         }
 
+        public Dictionary<string, string> EditRouteData() =>
+            new Dictionary<string, string>()
+            {
+                {"group", TriggerGroup },
+                {"name", TriggerName }
+            };
+
+        public Dictionary<string, string> EditJobRouteData() =>
+            new Dictionary<string, string>()
+            {
+                { "group", JobGroup },
+                { "name", JobName }
+            };
     }
 }

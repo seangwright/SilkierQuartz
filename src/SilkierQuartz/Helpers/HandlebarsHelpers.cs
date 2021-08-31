@@ -41,7 +41,7 @@ namespace SilkierQuartz.Helpers
             h.RegisterHelper("DefaultDateFormat", (o, c, a) => o.Write(DateTimeSettings.DefaultDateFormat));
             h.RegisterHelper("DefaultTimeFormat", (o, c, a) => o.Write(DateTimeSettings.DefaultTimeFormat));
             h.RegisterHelper("DoLayout", (o, c, a) => c.Layout());
-            h.RegisterHelper("SerializeTypeHandler", (o, c, a) => o.WriteSafeString(((Services)a[0]).TypeHandlers.Serialize((TypeHandlerBase)c)));
+            h.RegisterHelper("SerializeTypeHandler", (o, c, a) => o.WriteSafeString(TypeHandlerService.Serialize((TypeHandlerBase)c)));
             h.RegisterHelper("Disabled", (o, c, a) => { if (IsTrue(a[0])) o.Write("disabled"); });
             h.RegisterHelper("Checked", (o, c, a) => { if (IsTrue(a[0])) o.Write("checked"); });
             h.RegisterHelper("nvl", (o, c, a) => o.Write(a[a[0] == null ? 1 : 0]));

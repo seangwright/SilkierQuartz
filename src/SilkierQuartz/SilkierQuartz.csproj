@@ -7,6 +7,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>1591</NoWarn>
 		<GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 
 		<Version>5.0.1</Version>
 		<Product>SilkierQuartz</Product>
@@ -70,7 +71,6 @@
 
 	<ItemGroup>
 		<EmbeddedResource Include="Content\**" />
-		<EmbeddedResource Include="Views\**" />
 		<EmbeddedResource Include="TypeHandlers\*.hbs" />
 		<EmbeddedResource Include="TypeHandlers\*.js" />
 	</ItemGroup>

@@ -18,8 +18,6 @@ namespace SilkierQuartz
 
         public IScheduler Scheduler { get; set; }
 
-        internal Cache Cache { get; private set; }
-
         public static Services Create(SilkierQuartzOptions options, SilkierQuartzAuthenticationOptions authenticationOptions)
         {
             var handlebarsConfiguration = new HandlebarsConfiguration()
@@ -39,7 +37,6 @@ namespace SilkierQuartz
 
             services.ViewEngine = new ViewEngine(services);
             services.TypeHandlers = new TypeHandlerService(services);
-            services.Cache = new Cache(services);
 
             return services;
         }

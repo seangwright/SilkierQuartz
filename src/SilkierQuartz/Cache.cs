@@ -2,48 +2,51 @@
 using Quartz.Impl.Matchers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SilkierQuartz
 {
-    internal class Cache
+    public class Cache
     {
-        private readonly Services _services;
-        public Cache(Services services)
+        public Cache(ISchedulerFactory factory)
         {
-            _services = services;
+            this.factory = factory;
         }
 
-        private string[] _jobTypes;
-        public string[] JobTypes
+        private string[] jobTypes;
+        private readonly ISchedulerFactory factory;
+
+        public async Task<string[]> GetJobTypes(CancellationToken token = default)
         {
-            get
+            if (jobTypes == null)
             {
-                if (_jobTypes == null)
+                var scheduler = await factory.GetScheduler(token);
+                var keys = await scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup(), token);
+                var knownTypes = new List<string>();
+
+                foreach (var key in keys)
                 {
-                    lock (this)
+                    var detail = await scheduler.GetJobDetail(key, token);
+                    knownTypes.Add(detail.JobType.RemoveAssemblyDetails());
+                }
+
+                lock (this)
+                {
+                    if (jobTypes == null)
                     {
-                        if (_jobTypes == null)
-                        {
-                            var keys = _services.Scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup()).GetAwaiter().GetResult();
-                            var knownTypes = new List<string>();
-                            foreach (var key in keys)
-                            {
-                                var detail = _services.Scheduler.GetJobDetail(key).GetAwaiter().GetResult();
-                                knownTypes.Add(detail.JobType.RemoveAssemblyDetails());
-                            }
-                            UpdateJobTypes(knownTypes);
-                        }
+                        UpdateJobTypes(knownTypes);
                     }
                 }
-                return _jobTypes;
             }
+            return jobTypes;
         }
 
         public void UpdateJobTypes(IEnumerable<string> list)
         {
-            if (_jobTypes != null)
-                list = list.Concat(_jobTypes); // append existing types
-            _jobTypes = list.Distinct().OrderBy(x => x).ToArray();
+            if (jobTypes != null)
+                list = list.Concat(jobTypes); // append existing types
+            jobTypes = list.Distinct().OrderBy(x => x).ToArray();
         }
 
     }

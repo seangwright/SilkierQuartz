@@ -1,4 +1,6 @@
-﻿<table class="ui very basic single line table" id="job-data-map">
+﻿@model SilkierQuartz.Models.JobDataMapModel
+
+<table class="ui very basic single line table" id="job-data-map">
     <thead>
         <tr>
             <th class="six wide">Name</th>
@@ -7,9 +9,12 @@
         </tr>
     </thead>
     <tbody>
-        {{>JobDataMapRow item=Template template=true}}
-        {{#each Items}}{{>JobDataMapRow item=. template=false}}{{/each}}
-        {{>JobDataMapRow item=Template template=false}}
+        <vc:job-data-map item="Model.Template" is-template="true" />
+        @foreach (var item in Model.Items)
+        {
+            <vc:job-data-map item="item" is-template="true" />
+        }
+        <vc:job-data-map item="Model.Template" is-template="true" />
     </tbody>
 </table>
 

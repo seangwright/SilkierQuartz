@@ -1,25 +1,37 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Quartz;
 using SilkierQuartz.Helpers;
+using SilkierQuartz.Models;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SilkierQuartz.Controllers
 {
     [Authorize(Policy = SilkierQuartzAuthenticationOptions.AuthorizationPolicyName)]
-    public class ExecutionsController : PageControllerBase
+    public class ExecutionsController : Controller
     {
-        [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            var currentlyExecutingJobs = await Scheduler.GetCurrentlyExecutingJobs();
+        private readonly ISchedulerFactory factory;
 
-            var list = new List<object>();
+        public ExecutionsController(ISchedulerFactory factory)
+        {
+            this.factory = factory;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken token)
+        {
+            var scheduler = await factory.GetScheduler(token);
+
+            var currentlyExecutingJobs = await scheduler.GetCurrentlyExecutingJobs();
+
+            var list = new List<ExecutionViewModel>();
 
             foreach (var exec in currentlyExecutingJobs)
             {
-                list.Add(new
+                list.Add(new ExecutionViewModel
                 {
                     Id = exec.FireInstanceId,
                     JobGroup = exec.JobDetail.Key.Group,
@@ -41,9 +53,11 @@ namespace SilkierQuartz.Controllers
         }
 
         [HttpPost, JsonErrorResponse]
-        public async Task<IActionResult> Interrupt([FromBody] InterruptArgs args)
+        public async Task<IActionResult> Interrupt([FromBody] InterruptArgs args, CancellationToken token)
         {
-            if (!await Scheduler.Interrupt(args.Id))
+            var scheduler = await factory.GetScheduler(token);
+
+            if (!await scheduler.Interrupt(args.Id))
                 throw new InvalidOperationException("Cannot interrupt execution " + args.Id);
 
             return NoContent();

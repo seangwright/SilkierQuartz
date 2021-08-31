@@ -1,18 +1,20 @@
-﻿{{!<Layout}}
-{{#if Model.Job.IsNew}}
-    {{ViewBag Title='Add Job'}}
-{{else}}
-    {{ViewBag Title='Edit Job'}}
-{{/if}}
+﻿@model SilkierQuartz.Models.JobViewModel
+
+@{
+    ViewBag.Title = Model.Job.IsNew
+        ? "Add Job"
+        : "Edit Job";
+}
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
-<form class="ui form" id="form" method="post" enctype="multipart/form-data">
+<form class="ui form" id="form" method="post">
     <div class="ui clearing basic segment" style="padding: 0px" id="header">
         <div style="float: right">
-            <a class="ui button" id="btn-discard" href="{{ActionUrl ''}}">Discard Changes</a>
-            {{#unless Model.Job.IsNew}}
-            <div class="negative ui button" id="btn-delete">Delete</div>
-            {{/unless}}
+            <a class="ui button" id="btn-discard" asp-action="Edit">Discard Changes</a>
+            @if (!Model.Job.IsNew)
+            {
+                <div class="negative ui button" id="btn-delete">Delete</div>
+            }
             <div class="ui buttons">
                 <div class="ui primary button" id="btn-save">Save</div>
                 <div class="ui floating dropdown icon primary button" id="save-dropdown">
@@ -24,59 +26,63 @@
             </div>
         </div>
         <h1 class="ui left floated header">
-            {{#if Model.Job.IsNew}}Add Job{{else}}Edit Job "{{Model.Job.JobName}}"{{/if}}
+            @if (Model.Job.IsNew)
+            {
+                <text>Add Job</text>
+            }
+            else
+            {
+                <text>Edit Job</text> @Model.Job.JobName
+            }
         </h1>
     </div>
 
     <div class="ui segment">
-        {{#with Model.Job}}
-        <input type="hidden" name="job[isNew]" value="{{IsNew}}" />
-        {{#unless IsNew}}
-        <input type="hidden" name="job[oldJobName]" value="{{JobName}}" />
-        <input type="hidden" name="job[oldGroup]" value="{{Group}}" />
-        {{/unless}}
+
+        <input type="hidden" asp-for="Job.IsNew" />
+        @if (!Model.Job.IsNew)
+        {
+            <input type="hidden" asp-for="Job.JobName" />
+            <input type="hidden" asp-for="Job.Group" />
+        }
         <div id="job-properties">
 
             <div class="two fields">
                 <div class="field accept-error">
                     <label>Name</label>
-                    <input type="text" name="job[jobName]" placeholder="Name" value="{{JobName}}" id="jobName" />
+                    <input type="text" placeholder="Name" asp-for="Job.JobName" id="jobName" />
                 </div>
                 <div class="field accept-error">
                     <label>Group</label>
-                    <input type="hidden" value="{{Group}}" id="jobGroup" />
-                    <select class="ui search selection dropdown allow-additions" name="job[group]">
-                        <option value="">Group</option>
-                        {{>DropdownOptions items=GroupList selected=Group}}
+                    <input type="hidden" asp-for="Job.Group" id="jobGroup" />
+                    <select class="ui search selection dropdown allow-additions" id="jobGroup" asp-for="Job.Group" asp-items="Model.Job.GroupList">                        
                     </select>
                 </div>
             </div>
 
             <div class="field accept-error">
                 <label>Class</label>
-                <input type="hidden" value="{{Type}}" id="jobType" />
-                <select class="ui search selection dropdown allow-additions" name="job[type]" id="jobTypeDropdown">
-                    <option value="">Fully Qualified Type Name</option>
-                    {{>DropdownOptions items=TypeList selected=Type}}
+                <input type="hidden" asp-for="Job.Type" id="jobType" />
+                <select class="ui search selection dropdown allow-additions" id="jobTypeDropdown" asp-for="Job.Type" asp-items="Model.Job.TypeList">
                 </select>
             </div>
 
             <div class="field accept-error">
                 <label>Description</label>
-                <textarea rows="2" name="job[description]">{{Description}}</textarea>
+                <textarea rows="2" asp-for="Job.Description"></textarea>
             </div>
 
             <div class="field accept-error">
                 <div class="ui checkbox">
-                    <input name="job[recovery]" type="checkbox" value="True" {{Checked Recovery}} />
+                    <input type="checkbox" asp-for="Job.Recovery" />
                     <label>Requests Recovery</label>
                 </div>
             </div>
         </div>
-        {{/with}}
+
         <h3 class="ui dividing header">Job Data Map</h3>
 
-        {{>JobDataMap Model.DataMap}}
+        <vc:job-data-map map="Model.DataMap" />
     </div>
 </form>
 

@@ -1,5 +1,6 @@
 ﻿using CronExpressionDescriptor;
 using Quartz;
+using SilkierQuartz.Models;
 using SilkierQuartz.TypeHandlers;
 using System.Collections.Generic;
 using System.IO;
@@ -55,6 +56,12 @@ namespace SilkierQuartz
         /// Set options used by the cron expression description provider
         /// </summary>
         public Options CronExpressionOptions { get; set; } = new Options();
+
+        public JobDataMapItem JobDataMapItemTemplate => new JobDataMapItem()
+        {
+            SelectedType = DefaultSelectedType,
+            SupportedTypes = StandardTypes.Order(),
+        };
 
         public SilkierQuartzOptions()
         {

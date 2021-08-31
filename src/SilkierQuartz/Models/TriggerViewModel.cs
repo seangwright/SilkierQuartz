@@ -552,6 +552,12 @@ namespace SilkierQuartz.Models
 
             return model;
         }
+    }
 
+    public class TriggerAdditionalDataViewModel
+    {
+        public string TriggerName { get; set; }
+        public string TriggerGroup { get; set; }
+        public HistogramData History { get; set; }
     }
 }
