@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SilkierQuartz.Models;
 
-namespace SilkierQuartz.Components.JobDataMaps
+namespace SilkierQuartz.Components.JobDataMap
 {
     public class JobDataMapViewComponent : ViewComponent
     {

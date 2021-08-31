@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl.Matchers;
 using Quartz.Impl.Triggers;
@@ -18,6 +19,9 @@ namespace SilkierQuartz.Models
     {
         public TriggerPropertiesViewModel Trigger { get; set; }
         public JobDataMapModel DataMap { get; set; }
+        public IEnumerable<SelectListItem> SimpleOptions { get; set; }
+        public IEnumerable<SelectListItem> DailyOptions { get; set; }
+        public IEnumerable<SelectListItem> CalendarOptions { get; set; }
 
         public void Validate(ICollection<ValidationError> errors) => ModelValidator.ValidateObject(this, errors);
     }
@@ -423,7 +427,7 @@ namespace SilkierQuartz.Models
         [Required]
         public string Job { get; set; }
 
-        public IEnumerable<string> JobList { get; set; }
+        public IEnumerable<SelectListItem> JobList { get; set; }
 
         [Required]
         public string TriggerName { get; set; }
@@ -435,7 +439,7 @@ namespace SilkierQuartz.Models
 
         public string OldTriggerGroup { get; set; }
 
-        public IEnumerable<string> TriggerGroupList { get; set; }
+        public IEnumerable<SelectListItem> TriggerGroupList { get; set; }
 
         public string Description { get; set; }
 
@@ -446,7 +450,10 @@ namespace SilkierQuartz.Models
 
         public DateTime? GetEndTimeUtc() => ParseDateTime(EndTimeUtc);
 
-        public Dictionary<string, string> TimeZoneList { get => TimeZoneInfo.GetSystemTimeZones().ToDictionary(); }
+        public IEnumerable<SelectListItem> TimeZoneList => TimeZoneInfo
+            .GetSystemTimeZones()
+            .Select(t => new SelectListItem(t.DisplayName, t.StandardName))
+            .Prepend(new SelectListItem("--- Not Set ---", ""));
 
         DateTime? ParseDateTime(string value)
         {
@@ -490,11 +497,7 @@ namespace SilkierQuartz.Models
                 Simple.Validate(errors);
         }
 
-        public string MisfireInstructionsJson => _misfireInstructionsJson;
-
-        static readonly string _misfireInstructionsJson = CreateMisfireInstructionsJson();
-
-        private static string CreateMisfireInstructionsJson()
+        public Dictionary<string, Dictionary<int, string>> MisfireInstructionsJson()
         {
             var standardMisfireInstructions = new Dictionary<int, string>()
             {
@@ -521,18 +524,25 @@ namespace SilkierQuartz.Models
                 },
             };
 
-            return JsonConvert.SerializeObject(validMisfireInstructions, Formatting.None);
+            return validMisfireInstructions;
         }
 
         public static async Task<TriggerPropertiesViewModel> Create(IScheduler scheduler)
         {
             var model = new TriggerPropertiesViewModel()
             {
-                TriggerGroupList = (await scheduler.GetTriggerGroupNames()).GroupArray(),
                 TriggerGroup = SchedulerConstants.DefaultGroup,
-                JobList = (await scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup())).Select(x => x.ToString()).ToArray(),
                 CalendarNameList = await scheduler.GetCalendarNames(),
             };
+
+            model.TriggerGroupList = (await scheduler.GetTriggerGroupNames()).GroupArray()
+                .Select(i => new SelectListItem(i, i, string.Equals(model.TriggerGroup, i, StringComparison.OrdinalIgnoreCase)))
+                .Prepend(new SelectListItem("Trigger Group", ""));
+            model.JobList = (await scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup()))
+                .Select(x => x.ToString())
+                .Select(x => new SelectListItem(x, x, string.Equals(model.Job, x, StringComparison.OrdinalIgnoreCase)))
+                .Prepend(new SelectListItem("Select", ""))
+                .ToArray();
 
             model.Cron.TimeZone = TimeZoneInfo.Local.Id;
 

@@ -1,0 +1,6 @@
+﻿@model SilkierQuartz.Components.UnitSelect.UnitSelectViewModel
+
+@foreach (var item in Model.Items)
+{
+    <option value="@item.Value" @(item.Selected ? "selected" : "")>@item.Text</option>
+}

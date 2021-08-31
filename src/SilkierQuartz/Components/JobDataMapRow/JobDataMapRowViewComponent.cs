@@ -2,7 +2,7 @@
 using SilkierQuartz.Models;
 using SilkierQuartz.TypeHandlers;
 
-namespace SilkierQuartz.Components.JobDataMaps
+namespace SilkierQuartz.Components.JobDataMapRow
 {
     public class JobDataMapRowViewComponent : ViewComponent
     {

@@ -44,8 +44,6 @@
         </div>
     </div>
 
-
-
     <div class="ui stackable grid">
         <div class="seven wide column" style="padding-right: 14px !important">
             <h3 class="ui dividing header">Status</h3>
@@ -88,9 +86,8 @@
                 <button class="ui small button" id="btn-resume"><i class="play icon"></i>Resume All</button>
             </p>
 
-            {{>GroupActions items=JobGroups id='job-groups' header='Job Groups'}}
-            {{>GroupActions items=TriggerGroups id='trigger-groups' header='Trigger Groups'}}
-
+            <vc:group-actions id="job-groups" header="Job Groups" items="Model.JobGroups" />
+            <vc:group-actions id="trigger-groups" header="Trigger Groups" items="Model.TriggerGroups" />
         </div>
     </div>
 

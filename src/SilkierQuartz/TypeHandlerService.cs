@@ -12,8 +12,6 @@ namespace SilkierQuartz
     {
         readonly Dictionary<Type, TypeHandlerDescriptor> _handlers = new Dictionary<Type, TypeHandlerDescriptor>();
 
-        readonly Services _services;
-
         private static JsonSubtypesConverterBuilder _builder;
         private static JsonSubtypesConverterBuilder Builder
         {
@@ -59,8 +57,6 @@ namespace SilkierQuartz
 
         public TypeHandlerService(Services services)
         {
-            _services = services;
-
             _builder = JsonSubtypesConverterBuilder.Of(typeof(TypeHandlerBase), nameof(TypeHandlerBase.TypeId));
 
             if (services?.Options?.StandardTypes != null)
@@ -83,8 +79,6 @@ namespace SilkierQuartz
                 TypeId = TypeHandlerBase.GetTypeId(type),
                 Resources = TypeHandlerResourcesAttribute.GetResolved(type),
             };
-
-            desc.Render = _services.Handlebars.Compile(desc.Resources.Template);
 
             _handlers.Add(type, desc);
 

@@ -1,14 +1,12 @@
-﻿using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Quartz.Impl;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Quartz;
 using Quartz.Spi;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SilkierQuartz.HostedService
 {
@@ -33,7 +31,7 @@ namespace SilkierQuartz.HostedService
         {
             var _scheduleJobs = Services.GetService<IEnumerable<IScheduleJob>>();
 
-            _scheduler = await _schedulerFactory.GetScheduler();
+            _scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
             _scheduler.JobFactory = _jobFactory;
 
             await _scheduler.Start(cancellationToken);

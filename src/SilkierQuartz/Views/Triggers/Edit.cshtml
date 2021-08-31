@@ -73,9 +73,7 @@
             <div class="fields">
                 <div class="twelve wide field accept-error">
                     <label>Job</label>
-                    <select class="ui fluid dropdown" name="trigger[job]" {{#unless IsNew}} disabled {{/unless}}>
-                        <option value="">Select</option>
-                        {{>DropdownOptions items=JobList selected=Job}}
+                    <select asp-for="Trigger.Job" asp-items="Model.Trigger.JobList" class="ui fluid dropdown" disabled="@Model.Trigger.IsNew">
                     </select>
                 </div>
             </div>
@@ -88,9 +86,7 @@
                 <div class="field accept-error">
                     <label>Trigger Group</label>
                     <input type="hidden" asp-for="Trigger.TriggerGroup" id="triggerGroup" />
-                    <select class="ui search selection dropdown allow-additions" name="trigger[triggerGroup]">
-                        <option value="">Trigger Group</option>
-                        {{>DropdownOptions items=TriggerGroupList selected=TriggerGroup}}
+                    <select asp-for="Trigger.TriggerGroup" asp-items="Model.Trigger.TriggerGroupList" class="ui search selection dropdown allow-additions">
                     </select>
                 </div>
             </div>
@@ -157,9 +153,7 @@
                     </div>
                     <div class="nine wide field accept-error">
                         <label>Time Zone</label>
-                        <select class="ui fluid search fulltext selection dropdown allow-empty" name="trigger[cron.timeZone]">
-                            <option value="">--- Not Set ---</option>
-                            {{>DropdownOptions items=TimeZoneList selected=Cron.TimeZone}}
+                        <select asp-for="Trigger.Cron.TimeZone" asp-items="Model.Trigger.TimeZoneList" class="ui fluid search fulltext selection dropdown allow-empty">
                         </select>
                     </div>
                 </div>
@@ -173,7 +167,10 @@
                     </div>
                     <div class="three wide field accept-error">
                         <label>Unit</label>
-                        {{>UnitDropdown name='trigger[simple.repeatUnit]' allowIrregular=false allowMillisecond=true selected=Simple.RepeatUnit}}
+                        
+                        <select class="ui fluid dropdown" asp-for="Trigger.Simple.RepeatUnit">
+                            <vc:unit-select-options allow-irregular="false" allow-millisecond="true" selected-value="@Model.Trigger.Simple.RepeatUnit" />
+                        </select>
                     </div>
                 </div>
 
@@ -201,13 +198,13 @@
                     </div>
                     <div class="three wide field accept-error">
                         <label>Unit</label>
-                        {{>UnitDropdown name='trigger[calendar.repeatUnit]' allowIrregular=true allowMillisecond=true selected=Calendar.RepeatUnit}}
+                        <select class="ui fluid dropdown" asp-for="Trigger.Calendar.RepeatUnit">
+                            <vc:unit-select-options allow-irregular="true" allow-millisecond="true" selected-value="@Model.Trigger.Calendar.RepeatUnit" />
+                        </select>
                     </div>
                     <div class="nine wide field accept-error">
                         <label>Time Zone</label>
-                        <select class="ui fluid search fulltext selection dropdown allow-empty" name="trigger[calendar.timeZone]">
-                            <option value="">--- Not Set ---</option>
-                            {{>DropdownOptions items=TimeZoneList selected=Calendar.TimeZone}}
+                        <select asp-for="Trigger.Calendar.TimeZone" asp-items="Model.Trigger.TimeZoneList" class="ui fluid search fulltext selection dropdown allow-empty">
                         </select>
                     </div>
                 </div>
@@ -231,17 +228,17 @@
                 <div class="fields">
                     <div class="four wide field accept-error">
                         <label>Repeat Interval</label>
-                        <input type="text" name="trigger[daily.repeatInterval]" placeholder="Repeat Interval" value="{{Daily.RepeatInterval}}" />
+                        <input type="text" asp-for="Trigger.Daily.RepeatInterval" placeholder="Repeat Interval" />
                     </div>
                     <div class="three wide field accept-error">
                         <label>Unit</label>
-                        {{>UnitDropdown name='trigger[daily.repeatUnit]' allowIrregular=false allowMillisecond=false selected=Daily.RepeatUnit}}
+                        <select class="ui fluid dropdown" asp-for="Trigger.Daily.RepeatUnit">
+                            <vc:unit-select-options allow-irregular="false" allow-millisecond="false" selected-value="@Model.Trigger.Daily.RepeatUnit" />
+                        </select>
                     </div>
                     <div class="nine wide field accept-error">
                         <label>Time Zone</label>
-                        <select class="ui fluid search fulltext selection dropdown allow-empty" name="trigger[daily.timeZone]">
-                            <option value="">--- Not Set ---</option>
-                            {{>DropdownOptions items=TimeZoneList selected=Daily.TimeZone}}
+                        <select asp-for="Trigger.Daily.TimeZone" asp-items="Model.Trigger.TimeZoneList" class="ui fluid search fulltext selection dropdown allow-empty">
                         </select>
                     </div>
                 </div>
@@ -281,7 +278,10 @@
                     </div>
                 </div>
 
-                {{#with Daily.DaysOfWeek}}
+                @{ 
+
+                }
+                
                 <div class="field">
                     <label>Days of Week</label>
                     <div class="inline fields">
@@ -329,11 +329,9 @@
                         </div>
                     </div>
                 </div>
-                {{/with}}
             </div>
 
         </div>
-        {{/with}}
         <h3 class="ui dividing header">Job Data Map</h3>
 
         <vc:job-data-map map="Model.DataMap" />
@@ -352,7 +350,7 @@
 </div>
 
 <script>
-    const $misfireInstructionsMap = @Model.Trigger.MisfireInstructionsJson;
+    const $misfireInstructionsMap = @Json.Serialize(Model.Trigger.MisfireInstructionsJson());
 
     $(function () {
         const

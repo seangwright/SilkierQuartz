@@ -1,0 +1,31 @@
+﻿@model SilkierQuartz.Components.GroupActions.GroupActionsViewModel
+
+@{
+    if (!Model.Items.Any())
+    {
+        return;
+    }
+}
+
+<div class="group-actions" id="@Model.Id">
+    <h4 class="ui dividing header">@Model.Header</h4>
+    <ul>
+        @foreach (var item in Model.Items)
+        {
+            @if (item.IsPaused)
+            {
+                <li class="paused">
+                    @item.Name
+                    <button class="ui super tiny button" data-action="resume" data-name="@item.Name"><i class="play icon"></i>Resume</button>
+                </li>
+            }
+            else
+            {
+                <li class="resumed">
+                    @item.Name
+                    <button class="ui super tiny button" data-action="pause" data-name="@item.Name"><i class="pause icon"></i>Pause</button>
+                </li>
+            }
+        }
+    </ul>
+</div>
