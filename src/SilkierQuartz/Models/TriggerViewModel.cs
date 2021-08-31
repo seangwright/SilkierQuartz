@@ -468,12 +468,14 @@ namespace SilkierQuartz.Models
 
         public string CalendarName { get; set; }
 
-        public IEnumerable<string> CalendarNameList { get; set; }
+        public IEnumerable<SelectListItem> CalendarNameList { get; set; }
 
         [Required]
         public int? Priority { get; set; }
 
-        public IEnumerable<string> PriorityList => Enumerable.Range(1, 10).Select(x => x.ToString());
+        public IEnumerable<SelectListItem> PriorityList => Enumerable.Range(1, 10)
+            .Select(v => new SelectListItem(v.ToString(), v.ToString(), v == (Priority ?? 0)))
+            .ToArray();
 
         public int PriorityOrDefault => Priority ?? 5;
 
@@ -532,8 +534,12 @@ namespace SilkierQuartz.Models
             var model = new TriggerPropertiesViewModel()
             {
                 TriggerGroup = SchedulerConstants.DefaultGroup,
-                CalendarNameList = await scheduler.GetCalendarNames(),
             };
+
+            model.CalendarNameList = (await scheduler.GetCalendarNames())
+                .Select(n => new SelectListItem(n, n, string.Equals(n, model.CalendarName)))
+                .Prepend(new SelectListItem("--- Not Set ---", "", string.Equals("", model.CalendarName)))
+                .ToArray();
 
             model.TriggerGroupList = (await scheduler.GetTriggerGroupNames()).GroupArray()
                 .Select(i => new SelectListItem(i, i, string.Equals(model.TriggerGroup, i, StringComparison.OrdinalIgnoreCase)))

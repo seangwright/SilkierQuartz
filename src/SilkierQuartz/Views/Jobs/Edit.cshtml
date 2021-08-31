@@ -97,7 +97,19 @@
     </div>
 </div>
 
+@{ 
+    string indexUrl = Url.Action("");
+    string deleteUrl = Url.Action("Delete");
+    string saveUrl = Url.Action("Save");
+}
+
 <script>
+    window.jobEdit = {
+        indexUrl: @Json.Serialize(indexUrl),
+        deleteUrl: @Json.Serialize(deleteUrl),
+        saveUrl: @Json.Serialize(saveUrl)
+    }
+
     $(function () {
         const
             $jobGroup = $('#jobGroup').val(),
@@ -122,7 +134,7 @@
         $('#btn-delete').click(function () {
             $('#delete-dialog .confirm-item').text($jobGroup + '.' + $jobName);
             deleteItem({ name: $jobName, group: $jobGroup }, $('#job-properties'),
-                '{{ActionUrl "Delete"}}', '{{ActionUrl ""}}');
+                window.jobEdit.deleteUrl, window.jobEdit.indexUrl);
         });
 
         function save(triggerNow) {
@@ -135,11 +147,11 @@
             var formData = new FormData($('#form')[0]);
 
             $.ajax({
-                type: 'POST', enctype: 'multipart/form-data', url: '{{ActionUrl "Save"}}?trigger=' + triggerNow,
+                type: 'POST', enctype: 'multipart/form-data', url: window.jobEdit.saveUrl + '?trigger=' + triggerNow,
                 data: formData, processData: false, contentType: false, dataType: "json", cache: false,
                 success: function (data) {
                     if (processValidationResponse(data)) {
-                        document.location = '{{ActionUrl ""}}';
+                        document.location = window.jobEdit.indexUrl;
                     } else {
                         $('#dimmer').dimmer('hide');
                     }

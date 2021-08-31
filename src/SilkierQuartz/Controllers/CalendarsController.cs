@@ -43,13 +43,18 @@ namespace SilkierQuartz.Controllers
         [HttpGet]
         public IActionResult New()
         {
-            ViewBag.IsNew = true;
-            return View("Edit", new[] { new CalendarViewModel()
+            var calendars = new[] { new CalendarViewModel()
             {
                 IsRoot = true,
                 Type = "cron",
                 TimeZone = TimeZoneInfo.Local.Id,
-            }});
+            }};
+
+            return View("Edit", new CalendarsViewModel
+            {
+                IsNew = true,
+                Calendars = calendars
+            });
         }
 
         [HttpGet]
@@ -67,9 +72,11 @@ namespace SilkierQuartz.Controllers
                 model[0].Name = name;
             }
 
-            ViewBag.IsNew = false;
-
-            return View(model);
+            return View(new CalendarsViewModel
+            {
+                IsNew = false,
+                Calendars = model
+            });
         }
 
         private void RemoveLastEmpty(List<string> list)

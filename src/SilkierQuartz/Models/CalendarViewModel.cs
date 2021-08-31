@@ -1,7 +1,6 @@
 ﻿using Quartz;
 using Quartz.Impl.Calendar;
 using SilkierQuartz.Helpers;
-using SilkierQuartz.TypeHandlers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +9,13 @@ using System.Linq;
 
 namespace SilkierQuartz.Models
 {
+    public class CalendarsViewModel
+    {
+        public bool IsNew { get; set; }
+        public IEnumerable<CalendarViewModel> Calendars { get; set; }
+        public Dictionary<string, string> Timezones => TimeZoneInfo.GetSystemTimeZones().ToDictionary();
+    }
+
     public class CalendarViewModel : IHasValidation
     {
         public string Name { get; set; }

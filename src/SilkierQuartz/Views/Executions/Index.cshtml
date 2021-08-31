@@ -41,7 +41,15 @@
     <vc:no-results name="" />
 }
 
+@{ 
+    string interruptUrl = Url.Action("Interrupt");
+}
+
 <script>
+
+    window['executions'] = {
+        interruptUrl: @Json.Serialize(interruptUrl)
+    }
 
     initDimmer();
 
@@ -51,7 +59,7 @@
         const id = $(this).data('id');
         const btn = $(this);
         $.ajax({
-            type: 'POST', url: '{{ActionUrl "Interrupt"}}',
+            type: 'POST', url: window.executions.interruptUrl,
             data: JSON.stringify({ id: id}),
             contentType: 'application/json', cache: false,
             success: function () {

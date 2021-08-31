@@ -102,7 +102,7 @@
                     <div class="ui calendar date-time">
                         <div class="ui fluid input left icon">
                             <i class="calendar alternate outline icon"></i>
-                            <input type="text" name="trigger[startTimeUtc]" autocomplete="off" value="{{StartTimeUtc}}" placeholder="Date/Time">
+                            <input type="text" asp-for="Trigger.StartTimeUtc" autocomplete="off" placeholder="Date/Time">
                         </div>
                     </div>
                 </div>
@@ -111,7 +111,7 @@
                     <div class="ui calendar date-time">
                         <div class="ui fluid input left icon">
                             <i class="calendar alternate outline icon"></i>
-                            <input type="text" name="trigger[endTimeUtc]" autocomplete="off" value="{{EndTimeUtc}}" placeholder="Date/Time">
+                            <input type="text" asp-for="Trigger.EndTimeUtc" autocomplete="off" placeholder="Date/Time">
                         </div>
                     </div>
                 </div>
@@ -120,9 +120,7 @@
             <div class="fields">
                 <div class="eight wide field accept-error">
                     <label>Calendar</label>
-                    <select class="ui fluid dropdown allow-empty" name="trigger[calendarName]" value="{{CalendarName}}">
-                        <option value="">--- Not Set ---</option>
-                        {{>DropdownOptions items=CalendarNameList selected=CalendarName}}
+                    <select class="ui fluid dropdown allow-empty" asp-for="Trigger.CalendarName" asp-items="Model.Trigger.CalendarNameList">
                     </select>
                 </div>
             </div>
@@ -131,12 +129,11 @@
                 <div class="eight wide field accept-error">
                     <label>Misfire Instruction</label>
                     <input type="hidden" name="trigger[misfireInstruction]" id="selectedMisfireInstruction">
-                    <select class="ui fluid dropdown" id="misfireInstructions"></select>
+                    <select  class="ui fluid dropdown" id="misfireInstructions"></select>
                 </div>
                 <div class="two wide field accept-error">
                     <label>Priority</label>
-                    <select class="ui search selection dropdown allow-additions" name="trigger[priority]" id="triggerPriority">
-                        {{>DropdownOptions items=PriorityList selected=PriorityOrDefault}}
+                    <select asp-for="Trigger.Priority" asp-items="Model.Trigger.PriorityList" class="ui search selection dropdown allow-additions">
                     </select>
                 </div>
             </div>
@@ -147,7 +144,7 @@
                 <div class="fields">
                     <div class="seven wide field accept-error cron-field">
                         <label>Cron Expression <a href="http://cronmaker.com" target="_blank"><i class="external alternate icon"></i>http://cronmaker.com</a></label>
-                        <input type="text" name="trigger[cron.expression]" placeholder="Cron Expression" id="cron-expression" value="{{Cron.Expression}}" />
+                        <input type="text" asp-for="Trigger.Cron.Expression" placeholder="Cron Expression" id="cron-expression"  />
                         <div style="float: right; cursor:pointer; display: none" id="next-cron-dates"><i class="eye icon"></i></div>
                         <p id="cron-desc"></p>
                     </div>
@@ -163,7 +160,7 @@
                 <div class="fields">
                     <div class="four wide field accept-error">
                         <label>Repeat Interval</label>
-                        <input type="text" name="trigger[simple.repeatInterval]" placeholder="Repeat Interval" value="{{Simple.RepeatInterval}}" />
+                        <input type="text" asp-for="Trigger.Simple.RepeatInterval" placeholder="Repeat Interval" />
                     </div>
                     <div class="three wide field accept-error">
                         <label>Unit</label>
@@ -177,13 +174,13 @@
                 <div class="fields">
                     <div class="four wide field accept-error">
                         <label>Repeat Count</label>
-                        <input type="text" name="trigger[simple.repeatCount]" placeholder="Repeat Count" id="triggerSimpleRepeatCount" value="{{Simple.RepeatCount}}" {{Disabled Simple.RepeatForever}} />
+                        <input type="text" asp-for="Trigger.Simple.RepeatCount" placeholder="Repeat Count" id="triggerSimpleRepeatCount" disabled="@Model.Trigger.Simple.RepeatForever" />
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="ui checkbox">
-                        <input name="trigger[simple.repeatForever]" type="checkbox" value="True" data-toggle-input="triggerSimpleRepeatCount" {{Checked Simple.RepeatForever}} />
+                        <input asp-for="Trigger.Simple.RepeatForever" type="checkbox" value="True" data-toggle-input="triggerSimpleRepeatCount" checked="@Model.Trigger.Simple.RepeatCount" />
                         <label>Repeat Forever</label>
                     </div>
                 </div>
@@ -194,7 +191,7 @@
                 <div class="fields">
                     <div class="four wide field accept-error">
                         <label>Repeat Interval</label>
-                        <input type="text" name="trigger[calendar.repeatInterval]" placeholder="Repeat Interval" value="{{Calendar.RepeatInterval}}" />
+                        <input type="text" asp-for="Trigger.Calendar.RepeatInterval" placeholder="Repeat Interval" />
                     </div>
                     <div class="three wide field accept-error">
                         <label>Unit</label>
@@ -211,14 +208,14 @@
 
                 <div class="field">
                     <div class="ui checkbox">
-                        <input name="trigger[calendar.preserveHourAcrossDst]" type="checkbox" value="True" {{Checked Calendar.PreserveHourAcrossDst}} />
+                        <input type="checkbox" value="True" asp-for="Trigger.Calendar.PreserveHourAcrossDst" />
                         <label>Preserve Hour of Day Across Daylight Savings</label>
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="ui checkbox">
-                        <input name="trigger[calendar.skipDayIfHourDoesNotExist]" type="checkbox" value="True" {{Checked Calendar.SkipDayIfHourDoesNotExist}} />
+                        <input type="checkbox" value="True" asp-for="Trigger.Calendar.SkipDayIfHourDoesNotExist" />
                         <label>Skip Day If Hour Does Not Exist</label>
                     </div>
                 </div>
@@ -246,13 +243,13 @@
                 <div class="fields">
                     <div class="four wide field accept-error">
                         <label>Repeat Count</label>
-                        <input type="text" name="trigger[daily.repeatCount]" placeholder="Repeat Count" id="triggerDailyRepeatCount" value="{{Daily.RepeatCount}}" {{Disabled Daily.RepeatForever}} />
+                        <input type="text" placeholder="Repeat Count" id="triggerDailyRepeatCount" asp-for="Trigger.Daily.RepeatCount" disabled="@Model.Trigger.Daily.RepeatForever" />
                     </div>
                 </div>
 
                 <div class="field">
                     <div class="ui checkbox">
-                        <input name="trigger[daily.repeatForever]" type="checkbox" value="True" data-toggle-input="triggerDailyRepeatCount" {{Checked Daily.RepeatForever}}>
+                        <input type="checkbox" asp-for="Trigger.Daily.RepeatForever" data-toggle-input="triggerDailyRepeatCount">
                         <label>Repeat Forever</label>
                     </div>
                 </div>
@@ -263,7 +260,7 @@
                         <div class="ui calendar time-only">
                             <div class="ui fluid input left icon">
                                 <i class="clock alternate outline icon"></i>
-                                <input type="text" autocomplete="off" name="trigger[daily.startTime]" placeholder="Time" value="{{Daily.StartTime}}">
+                                <input type="text" autocomplete="off" asp-for="Trigger.Daily.StartTime" placeholder="Time">
                             </div>
                         </div>
                     </div>
@@ -272,7 +269,7 @@
                         <div class="ui calendar time-only">
                             <div class="ui fluid input left icon">
                                 <i class="clock alternate outline icon"></i>
-                                <input type="text" autocomplete="off" name="trigger[daily.endTime]" placeholder="Time" value="{{Daily.EndTime}}">
+                                <input type="text" autocomplete="off" asp-for="Trigger.Daily.EndTime" placeholder="Time">
                             </div>
                         </div>
                     </div>
@@ -287,43 +284,43 @@
                     <div class="inline fields">
                         <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" name="trigger[daily.daysOfWeek.monday]" value="True" {{Checked Monday}} />
+                                <input type="checkbox" asp-for="Trigger.Daily.DaysOfWeek.Monday" name="trigger[daily.daysOfWeek.monday]" value="True" />
                                 <label>Monday</label>
                             </div>
                         </div>
                         <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" name="trigger[daily.daysOfWeek.tuesday]" value="True" {{Checked Tuesday}} />
+                                <input type="checkbox" asp-for="Trigger.Daily.DaysOfWeek.Tuesday" />
                                 <label>Tuesday</label>
                             </div>
                         </div>
                         <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" name="trigger[daily.daysOfWeek.wednesday]" value="True" {{Checked Wednesday}} />
+                                <input type="checkbox" asp-for="Trigger.Daily.DaysOfWeek.Wednesday" />
                                 <label>Wednesday</label>
                             </div>
                         </div>
                         <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" name="trigger[daily.daysOfWeek.thursday]" value="True" {{Checked Thursday}} />
+                                <input type="checkbox" asp-for="Trigger.Daily.DaysOfWeek.Thursday" />
                                 <label>Thursday</label>
                             </div>
                         </div>
                         <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" name="trigger[daily.daysOfWeek.friday]" value="True" {{Checked Friday}} />
+                                <input type="checkbox" asp-for="Trigger.Daily.DaysOfWeek.Friday" />
                                 <label>Friday</label>
                             </div>
                         </div>
                         <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" name="trigger[daily.daysOfWeek.saturday]" value="True" {{Checked Saturday}} />
+                                <input type="checkbox" asp-for="Trigger.Daily.DaysOfWeek.Saturday" />
                                 <label>Saturday</label>
                             </div>
                         </div>
                         <div class="field">
                             <div class="ui checkbox">
-                                <input type="checkbox" name="trigger[daily.daysOfWeek.sunday]" value="True" {{Checked Sunday}} />
+                                <input type="checkbox" asp-for="Trigger.Daily.DaysOfWeek.Sunday" />
                                 <label>Sunday</label>
                             </div>
                         </div>
@@ -349,7 +346,31 @@
     </div>
 </div>
 
+@{
+    string indexUrl = Url.Action("");
+    string saveUrl = Url.Action("Save");
+    string deleteUrl = Url.Action("Delete");
+    string cronUrl = Url.Action("Cron");
+    string triggerType = Model.Trigger.Type.ToString().ToLowerInvariant();
+    int? misfireInstruction = Model.Trigger.MisfireInstruction;
+    int? priority = Model.Trigger.Priority;
+    string dateFormat = Model.Trigger.DateFormat.ToUpperInvariant();
+    string timeFormat = Model.Trigger.TimeFormat;
+}
+
 <script>
+    window.triggerEdit = {
+        indexUrl: @Json.Serialize(indexUrl),
+        saveUrl: @Json.Serialize(saveUrl),
+        deleteUrl: @Json.Serialize(deleteUrl),
+        cronUrl: @Json.Serialize(cronUrl),
+        triggerType: @Json.Serialize(triggerType),
+        misfireInstruction: @Json.Serialize(misfireInstruction),
+        priority: @Json.Serialize(priority),
+        dateFormat: @Json.Serialize(dateFormat),
+        timeFormat: @Json.Serialize(timeFormat)
+    }
+
     const $misfireInstructionsMap = @Json.Serialize(Model.Trigger.MisfireInstructionsJson());
 
     $(function () {
@@ -395,26 +416,26 @@
         });
 
         $('#trigger-type-radios .radio').checkbox('setting', 'onChange', triggerTypeChanged);
-        $('#trigger-type-radios input[value={{Lower Model.Trigger.Type}}]').closest('.radio').checkbox('check');
+        $('#trigger-type-radios input[value=' + window.triggerEdit.triggerType +']').closest('.radio').checkbox('check');
 
-        $('#misfireInstructions').dropdown('set selected', '{{Model.Trigger.MisfireInstruction}}'); // because misfire dropdown values were changed in triggerTypeChanged
-        $('#triggerPriority').dropdown('set selected', '{{Model.Trigger.Priority}}'); // in case priority is out of range [1-10]
+        $('#misfireInstructions').dropdown('set selected', window.triggerEdit.misfireInstruction); // because misfire dropdown values were changed in triggerTypeChanged
+        $('#triggerPriority').dropdown('set selected', window.triggerEdit.priority); // in case priority is out of range [1-10]
 
         $('#trigger-properties .ui.checkbox input[data-toggle-input]')
             .closest('.ui.checkbox')
             .checkbox('setting', 'onChange', function () {
                 $('#' + $(this).data('toggle-input')).prop('disabled', this.checked); // search for input's ID specified with attribute data-toggle-input and set accessibility for that input based on checkbox state
             });
-
+        
         initDimmer();
 
         // cron describe
-        initCronLiveDescription('{{ActionUrl "Cron"}}', $('#cron-expression'), $('#cron-desc'), $('#next-cron-dates'));
+        initCronLiveDescription(window.triggerEdit.cronUrl, $('#cron-expression'), $('#cron-desc'), $('#next-cron-dates'));
 
         function initCalendars(elements) {
             const
-                dateFmt = '{{Upper Model.Trigger.DateFormat}}',
-                timeFmt = '{{Model.Trigger.TimeFormat}}',
+                dateFmt = window.triggerEdit.dateForm,
+                timeFmt = window.triggerEdit.timeFormat,
                 fmt = dateFmt + ' ' + timeFmt;
 
             elements.each(function () {
@@ -449,7 +470,7 @@
         $('#btn-delete').click(function () {
             $('#delete-dialog .confirm-item').text($triggerGroup + '.' + $triggerName);
             deleteItem({ name: $triggerName, group: $triggerGroup }, $('#trigger-properties'),
-                '{{ActionUrl "Delete"}}', '{{ActionUrl ""}}');
+                window.triggerEdit.deleteUrl, window.triggerEdit.indexUrl);
         });
 
         $('#btn-save').click(function () {
@@ -463,11 +484,11 @@
             const formData = new FormData($('#form')[0]);
 
             $.ajax({
-                type: 'POST', enctype: 'multipart/form-data', url: '{{ActionUrl "Save"}}',
+                type: 'POST', enctype: 'multipart/form-data', url: window.triggerEdit.saveUrl,
                 data: formData, processData: false, contentType: false, dataType: "json", cache: false,
                 success: function (data) {
                     if (processValidationResponse(data)) {
-                        document.location = '{{ActionUrl ""}}';
+                        document.location = window.triggerEdit.indexUrl;
                     } else {
                         $('#dimmer').dimmer('hide');
                     }

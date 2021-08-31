@@ -85,7 +85,7 @@
                     @(trigger.NextFireTime ?? "N/A")
                 </td>
                 <td class="trigger-histogram">
-                    <vc:histogram histogram="trigger.History" />
+                    <vc:histogram histogram-data="trigger.History" />
                 </td>
             </tr>
         }
@@ -118,7 +118,25 @@
     </div>
 </div>
 
+@{
+    string indexUrl = Url.Action("Index");
+    string deleteUrl = Url.Action("Delete");
+    string pauseUrl = Url.Action("Pause");
+    string resumeUrl = Url.Action("Resume");
+    string duplicateUrl = Url.Action("Duplicate");
+    string additionalDataUrl = Url.Action("AdditionalData");
+}
+
 <script>
+    window["triggers"] = {
+        indexUrl: @Json.Serialize(indexUrl),
+        pauseUrl: @Json.Serialize(pauseUrl),
+        duplicateUrl: @Json.Serialize(duplicateUrl),
+        resumeUrl: @Json.Serialize(resumeUrl),
+        deleteUrl: @Json.Serialize(deleteUrl),
+        additionalDataUrl: @Json.Serialize(additionalDataUrl)
+    };
+
     initDimmer();
 
     // search handling
@@ -186,7 +204,7 @@
             data: JSON.stringify(key),
             contentType: 'application/json', cache: false,
             success: function () {
-                document.location = '{{ActionUrl ""}}';
+                document.location = window.triggers.indexUrl;
             },
             error: function (e) {
                 $('#dimmer').dimmer('hide');
@@ -212,8 +230,8 @@
             mnuPause.show();
         }
 
-        mnuPause.attr('href', '{{ActionUrl "Pause"}}');
-        mnuResume.attr('href', '{{ActionUrl "Resume"}}');
+        mnuPause.attr('href', window.triggers.pauseUrl);
+        mnuResume.attr('href', window.triggers.resumeUrl);
 
         const pauseResumeFunc = function () {
             btn.popup('hide');
@@ -225,11 +243,11 @@
         mnuResume.click(pauseResumeFunc);
 
         menu.find('>.menu-edit').attr('href', row.find('>.trigger-name a').attr('href'));
-        menu.find('>.menu-copy').attr('href', '{{ActionUrl "Duplicate"}}?group=' + triggerGroup + '&name=' + triggerName);
+        menu.find('>.menu-copy').attr('href', window.triggers.duplicateUrl + '?group=' + triggerGroup + '&name=' + triggerName);
         menu.find('>.menu-delete').click(function () {
             $('#delete-dialog .confirm-item').text(triggerGroup + '.' + triggerName);
             deleteItem({ name: triggerName, group: triggerGroup }, $('#msg-panel'),
-                '{{ActionUrl "Delete"}}', '{{ActionUrl ""}}');
+                window.triggers.deleteUrl, window.triggers.indexUrl);
         });
 
         return menu;
@@ -253,6 +271,6 @@
     });
 
     // lazy loading
-    loadAdditionalData(rowIndex, '{{ActionUrl "AdditionalData"}}');
+    loadAdditionalData(rowIndex, window.triggers.additionalDataUrl);
 
 </script>

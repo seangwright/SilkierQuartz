@@ -31,7 +31,7 @@
     <div class="ui statistic" style="background-color: #f0f0f0;">
         <div class="value">
             <div style="height: 50px" class="dashboard-histogram">
-                <vc:histogram histogram="Model.History" />
+                <vc:histogram histogram-data="Model.History" />
             </div>
         </div>
         <div class="label">Latest Activity</div>
@@ -170,7 +170,17 @@
     </div>
 </div>
 
+@{ 
+    string actionUrl = Url.Action("Action");
+    string indexUrl = Url.Action("Index");
+}
+
 <script>
+    window['scheduler'] = {
+        actionUrl: @Json.Serialize(actionUrl),
+        indexUrl: @Json.Serialize(indexUrl)
+    }
+
     initHistogramTooltips($('.histogram > .bar'));
     initDimmer();
 
@@ -178,11 +188,11 @@
         $('#dimmer').dimmer('show');
 
         $.ajax({
-            type: 'POST', url: '{{ActionUrl "Action"}}',
+            type: 'POST', url: window.scheduler.actionUrl,
             data: JSON.stringify(content),
             contentType: 'application/json', cache: false,
             success: function () {
-                document.location = '{{ActionUrl ""}}';
+                document.location = window.scheduler.indexUrl;
             },
             error: function (e) {
                 $('#dimmer').dimmer('hide');

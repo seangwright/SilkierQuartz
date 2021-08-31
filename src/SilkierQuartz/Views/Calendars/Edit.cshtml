@@ -1,7 +1,7 @@
-﻿@model IEnumerable<SilkierQuartz.Models.CalendarViewModel>
+﻿@model SilkierQuartz.Models.CalendarsViewModel
 
 @{ 
-    ViewBag.Title = ViewBag.IsNew ? "Add Calendar" : "Edit Calendar";
+    ViewBag.Title = Model.IsNew ? "Add Calendar" : "Edit Calendar";
 }
 
 <div class="ui inverted page dimmer" id="dimmer"><div class="ui loader"></div></div>
@@ -9,14 +9,14 @@
     <div class="ui clearing basic segment" style="padding: 0px" id="header">
         <div style="float: right">
             <a class="ui button" id="btn-discard" asp-action="Index">Discard Changes</a>
-            @if (!ViewBag.IsNew)
+            @if (!Model.IsNew)
             {
                 <div class="negative ui button" id="btn-delete">Delete</div>
             }
             <div class="ui primary button" id="btn-save">Save</div>
         </div>
         <h1 class="ui left floated header">
-            @if (ViewBag.IsNew)
+            @if (Model.IsNew)
             {
                 <text>Add Calendar</text>
             }
@@ -27,7 +27,7 @@
         </h1>
     </div>
 
-    <input type="hidden" name="isNew" value="@ViewBag.IsNew" />
+    <input type="hidden" name="isNew" value="@Model.IsNew" />
 
     <div id="msg-panel"></div>
 
@@ -51,20 +51,38 @@
 <script src="Content/Scripts/calendar-editor.js"></script>
 <script src="Content/Scripts/post-validation.js"></script>
 
+@{ 
+    string indexUrl = Url.Action("");
+    string saveUrl = Url.Action("Save", new { IsNew = Model.IsNew });
+    string deleteUrl = Url.Action("Delete");
+    string triggersCronUrl = Url.Action("Cron", "Triggers");
+}
+
 <script>
     $(function () {
+        window.calendarEdit = {
+            indexUrl: @Json.Serialize(indexUrl),
+            saveUrl: @Json.Serialize(saveUrl),
+            deleteUrl: @Json.Serialize(deleteUrl),
+            triggersCronUrl: @Json.Serialize(triggersCronUrl),
+            isNew: @Json.Serialize(Model.IsNew),
+            defaultTimezone: @Json.Serialize(TimeZoneInfo.Local.Id),
+            timezones: @Json.Serialize(Model.Timezones),
+            dateFormat: @Json.Serialize(DateTimeSettings.DefaultDateFormat.ToUpperInvariant())
+        };
+
         initDimmer();
 
-        const model = {{Json Model}};
+        const model = @Json.Serialize(Model.Calendars);
 
         initQuartzCalendarEditor.call($('#seg-root'),
             {
                 model: model,
-                timezones: {{SystemTimeZonesJson}},
-                defaultTimezone: '{{LocalTimeZoneInfoId}}',
-                cronUrl: '{{ActionUrl "Cron" "Triggers"}}',
-                dateFormat: '{{Upper (DefaultDateFormat)}}',
-                isNew: '{{ViewBag.IsNew}}' === 'True'
+                timezones: window.calendarEdit.timezones,
+                defaultTimezone: window.calendarEdit.defaultTimezone,
+                cronUrl: window.calendarEdit.triggersCronUrl,
+                dateFormat: window.calendarEdit.dateFormat,
+                isNew: window.calendarEdit.isNew
             }
         );
 
@@ -72,7 +90,7 @@
         $('#btn-delete').click(function () {
             $('#delete-dialog .confirm-item').text(calName);
             deleteItem({ name: calName }, $('#msg-panel'),
-                '{{ActionUrl "Delete"}}', '{{ActionUrl ""}}');
+                window.calendarEdit.deleteUrl, window.calendarEdit.indexUrl);
         });
 
         $('#btn-save').click(function () {
@@ -81,11 +99,11 @@
             $('#dimmer').dimmer('show');
 
             $.ajax({
-                type: 'POST', url: '{{ActionUrl "Save" isNew=ViewBag.IsNew}}',
+                type: 'POST', url: window.calendarEdit.saveUrl,
                 data: JSON.stringify(model), contentType: 'application/json', dataType: "json", cache: false,
                 success: function (data) {
                     if (processValidationResponse(data, $('#seg-root'))) {
-                        document.location = '{{ActionUrl ""}}';
+                        document.location = window.calendarEdit.indexUrl;
                     } else {
                         $('#dimmer').dimmer('hide');
                     }

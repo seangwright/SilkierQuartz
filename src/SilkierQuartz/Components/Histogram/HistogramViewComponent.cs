@@ -5,11 +5,11 @@ namespace SilkierQuartz.Components.Histogram
 {
     public class HistogramViewComponent : ViewComponent
     {
-        public IViewComponentResult Invoke(HistogramData histogram)
+        public IViewComponentResult Invoke(HistogramData histogramData)
         {
-            histogram.Layout();
+            histogramData.Layout();
 
-            return View("_Histogram", histogram);
+            return View("_Histogram", histogramData);
         }
     }
 }

@@ -140,7 +140,7 @@ function initCronLiveDescription(url, $cronInput, $cronDesc, $nextCronDates) {
             data: $cronInput.val(), contentType: 'text/plain', dataType: 'json',
             success: function (data) {
                 $cronDesc.text(data.Description);
-                var nextHtml = data.Next.join('<br>');
+                var nextHtml = data.next.join('<br>');
                 if (nextHtml === '') $nextCronDates.hide(); else {
                     $nextCronDates.show();
                     $nextCronDates.popup({ html: '<div class="header">Scheduled dates</div><div class="content">' + nextHtml + '</div>' });

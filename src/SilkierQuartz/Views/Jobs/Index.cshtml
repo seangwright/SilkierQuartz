@@ -53,7 +53,7 @@
                 <td class="job-type">@job.Type</td>
                 <td class="next-fire-time"></td>
                 <td class="job-histogram">
-                    <vc:histogram histogram="job.History" />
+                    <vc:histogram histogram-data="job.History" />
                 </td>
                 <td>
                     @if (job.Persist)
@@ -99,7 +99,22 @@
     </div>
 </div>
 
+@{ 
+    string indexUrl = Url.Action("");
+    string additionalDataUrl = Url.Action("AdditionalData");
+    string deleteUrl = Url.Action("Delete");
+    string duplicateUrl = Url.Action("Duplicate");
+    string triggerUrl = Url.Action("Trigger");
+}
+
 <script>
+    window.jobs = {
+        indexUrl: @Json.Serialize(indexUrl),
+        additionalDataUrl: @Json.Serialize(additionalDataUrl),
+        deleteUrl: @Json.Serialize(deleteUrl),
+        duplicateUrl: @Json.Serialize(duplicateUrl),
+        triggerUrl: @Json.Serialize(triggerUrl),
+    };
 
     initDimmer();
 
@@ -156,12 +171,12 @@
     function bindContextMenu(menu, row, jobName, jobGroup) {
 
         menu.find('>.menu-edit').attr('href', row.find('>.job-name a').attr('href'));
-        menu.find('>.menu-copy').attr('href', '{{ActionUrl "Duplicate"}}?group=' + jobGroup + '&name=' + jobName);
-        menu.find('>.menu-trigger').attr('href', '{{ActionUrl "Trigger"}}?group=' + jobGroup + '&name=' + jobName);
+        menu.find('>.menu-copy').attr('href', window.jobs.duplicateUrl + '?group=' + jobGroup + '&name=' + jobName);
+        menu.find('>.menu-trigger').attr('href', window.jobs.triggerUrl + '?group=' + jobGroup + '&name=' + jobName);
         menu.find('>.menu-delete').click(function () {
             $('#delete-dialog .confirm-item').text(jobGroup +'.' + jobName);
             deleteItem({ name: jobName, group: jobGroup }, $('#msg-panel'),
-                '{{ActionUrl "Delete"}}', '{{ActionUrl ""}}');
+                window.jobs.deleteUrl, window.jobs.indexUrl);
         });
 
         return menu;
@@ -179,5 +194,5 @@
     });
 
     // lazy loading
-    loadAdditionalData(rowIndex, '{{ActionUrl "AdditionalData"}}');
+    loadAdditionalData(rowIndex, window.jobs.additionalDataUrl);
 </script>

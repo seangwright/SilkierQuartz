@@ -26,8 +26,16 @@
     </div>
 </form>
 
+@{ 
+    string triggerUrl = Url.Action("Trigger", new { group = Model.Group, name = Model.JobName });
+}
+
 <script>
     $(function () {
+        window.jobTrigger = {
+            triggerUrl: @Json.Serialize(triggerUrl)
+        };
+
         initDimmer();
 
         $('#btn-trigger').click(function () {
@@ -42,7 +50,7 @@
             const msgPanel = $('#job-data-map').parent();
 
             $.ajax({
-                type: 'POST', enctype: 'multipart/form-data', url: '{{ActionUrl "Trigger" group=ViewBag.Group name=ViewBag.JobName}}',
+                type: 'POST', enctype: 'multipart/form-data', url: window.jobTrigger.triggerUrl,
                 data: formData, processData: false, contentType: false, dataType: "json", cache: false,
                 success: function (data) {
                     $('#dimmer').dimmer('hide');
