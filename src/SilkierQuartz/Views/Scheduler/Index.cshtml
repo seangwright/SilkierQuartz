@@ -74,16 +74,26 @@
             <p style="margin-top: 1em">
                 @if (Model.MetaData.InStandbyMode)
                 {
-                    <button class="ui small button green" id="btn-start"><i class="play icon"></i>Start</button>
+                    <button x-data="actionButton('start')" @@click="onClick" class="ui small button green" id="btn-start">
+                        <i class="play icon"></i>Start
+                    </button>
                 }
                 else
                 {
-                    <button class="ui small button grey" id="btn-standby"><i class="stop icon"></i>Standby</button>
+                    <button x-data="actionButton('standby')" @@click="onClick" class="ui small button grey" id="btn-standby">
+                        <i class="stop icon"></i>Standby
+                    </button>
                 }
 
-                <button class="ui small button red" id="btn-shutdown"><i class="power icon"></i>Shutdown</button>
-                <button class="ui small button" id="btn-pause"><i class="pause icon"></i>Pause All</button>
-                <button class="ui small button" id="btn-resume"><i class="play icon"></i>Resume All</button>
+                <button x-data="shutdownButton" @@click="onClick" class="ui small button red" id="btn-shutdown">
+                    <i class="power icon"></i>Shutdown
+                </button>
+                <button x-data="actionButton('pause')" @@click="onClick" class="ui small button" id="btn-pause">
+                    <i class="pause icon"></i>Pause All
+                </button>
+                <button x-data="actionButton('resume')" @@click="onClick" class="ui small button" id="btn-resume">
+                    <i class="play icon"></i>Resume All
+                </button>
             </p>
 
             <vc:group-actions id="job-groups" header="Job Groups" items="Model.JobGroups" />
@@ -170,51 +180,66 @@
     </div>
 </div>
 
-@{ 
-    string actionUrl = Url.Action("Action");
-    string indexUrl = Url.Action("Index");
-}
-
 <script>
     window['scheduler'] = {
-        actionUrl: @Json.Serialize(actionUrl),
-        indexUrl: @Json.Serialize(indexUrl)
+        actionUrl: @Json.Serialize(Url.Action("Action")),
+        indexUrl: @Json.Serialize(Url.Action("Index"))
     }
 
     initHistogramTooltips($('.histogram > .bar'));
     initDimmer();
 
-    function doAction(content) {
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('groupAction', (name, action, groupId) => ({
+            name,
+            action,
+            groupId,
+
+            onClick() {
+                doAction({
+                    action: this.action,
+                    name: this.name,
+                    groups: this.groupId
+                });
+            },
+        }));
+
+        Alpine.data('actionButton', (action) => ({
+            action,
+
+            onClick() {
+                doAction({ action: this.action });
+            }
+        }));
+
+        Alpine.data('shutdownButton', () => ({
+            action: 'shutdown',
+
+            onClick() {
+                $('#shutdown-dialog')
+                    .modal({ duration: 250, onApprove: () => doAction({ action: this.action }) })
+                    .modal('show');
+            }
+        }));
+    })
+
+    async function doAction(content) {
         $('#dimmer').dimmer('show');
 
-        $.ajax({
-            type: 'POST', url: window.scheduler.actionUrl,
-            data: JSON.stringify(content),
-            contentType: 'application/json', cache: false,
-            success: function () {
-                document.location = window.scheduler.indexUrl;
-            },
-            error: function (e) {
-                $('#dimmer').dimmer('hide');
-                prependErrorMessage(e, $('#msg-panel'));
-            }
-        });
+        const result = await fetch(window.scheduler.actionUrl, {
+                body: JSON.stringify(content),
+                method: 'POST',
+                headers: { 'content-type': 'application/json' }
+            })
+            .catch(e => ({ error: e }));
+
+        if (result.error) {
+            $('#dimmer').dimmer('hide');
+            prependErrorMessage(result.error, $('#msg-panel'));
+
+            return;
+        }
+
+        document.location = window.scheduler.indexUrl;
     }
-
-    function confirmDialog(dlg, action) {
-        dlg.modal({ duration: 250, onApprove: function () { doAction({ action: action }); } })
-        .modal('show');
-    }
-
-    // event handlers
-    $('#btn-shutdown').click(function () { confirmDialog($('#shutdown-dialog'), 'shutdown'); });
-    $('#btn-pause').click(function () { doAction({ action: 'pause' }); });
-    $('#btn-resume').click(function () { doAction({ action: 'resume' }); });
-    $('#btn-standby').click(function () { doAction({ action: 'standby' }); });
-    $('#btn-start').click(function () { doAction({ action: 'start' }); });
-
-    $(document).on('click', '#job-groups.group-actions button, #trigger-groups.group-actions button', function () {
-        doAction({ action: $(this).data('action'), name: $(this).data('name'), groups: $(this).closest('.group-actions').attr('id') });
-    });
-
 </script>

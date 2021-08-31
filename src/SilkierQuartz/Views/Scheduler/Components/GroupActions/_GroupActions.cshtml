@@ -7,23 +7,23 @@
     }
 }
 
-<div class="group-actions" id="@Model.Id">
+<div class="group-actions" id="@Model.Id" >
     <h4 class="ui dividing header">@Model.Header</h4>
     <ul>
         @foreach (var item in Model.Items)
         {
             @if (item.IsPaused)
             {
-                <li class="paused">
+                <li class="paused" x-data="groupAction('@item.Name', 'resume', '@Model.Id')">
                     @item.Name
-                    <button class="ui super tiny button" data-action="resume" data-name="@item.Name"><i class="play icon"></i>Resume</button>
+                    <button @@click="onClick" class="ui super tiny button"><i class="play icon"></i>Resume</button>
                 </li>
             }
             else
             {
-                <li class="resumed">
+                <li class="resumed" x-data="groupAction('@item.Name', 'pause', '@Model.Id')">
                     @item.Name
-                    <button class="ui super tiny button" data-action="pause" data-name="@item.Name"><i class="pause icon"></i>Pause</button>
+                    <button @@click="onClick" class="ui super tiny button"><i class="pause icon"></i>Pause</button>
                 </li>
             }
         }
